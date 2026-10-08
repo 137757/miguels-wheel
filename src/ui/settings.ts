@@ -111,7 +111,7 @@ export class SettingsPanel {
             <h2 class="settings__title">Prize wheel studio</h2>
             <p class="settings__sub">
               Weights <strong>are</strong> percents — they must total <strong>100%</strong>.
-              The wheel arc you see is the odds you get.
+              Every slice looks the same size; the <strong>Chance %</strong> below is the real odds.
               ${custom ? `Custom layout saved${updated ? ` · ${new Date(updated).toLocaleString()}` : ''}.` : 'Using shipped defaults.'}
             </p>
           </div>

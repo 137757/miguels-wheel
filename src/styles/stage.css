@@ -1,7 +1,7 @@
 /* =========================================================================
    Stage: the 16:9 public screen.
-   Roughly 37% brand / 63% wheel. The wheel must be the first thing seen from
-   several metres away, so it gets the size, the contrast and the light.
+   Slim glass rail on the left, one GIANT wheel on the right. Nothing else —
+   no mascot, no tickers, no floating clutter. The wheel is the show.
    ========================================================================= */
 
 .screen {
@@ -19,10 +19,10 @@
   inset: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(360px, 37fr) minmax(0, 63fr);
+  grid-template-columns: minmax(300px, 340px) minmax(0, 1fr);
   align-items: stretch;
-  padding: clamp(1rem, 2vw, 2.4rem);
-  gap: clamp(0.75rem, 1.6vw, 2rem);
+  padding: clamp(1.25rem, 2.4vw, 2.75rem) clamp(1.25rem, 3vw, 3.5rem);
+  gap: clamp(1rem, 2.5vw, 3rem);
 }
 
 /* Stage darkens subtly when armed, and again while spinning. */
@@ -57,106 +57,105 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: clamp(0.5rem, 1.1vh, 1.1rem);
+  gap: clamp(0.9rem, 2vh, 1.6rem);
   min-width: 0;
-  padding-right: clamp(0.25rem, 1vw, 1rem);
 }
 
 .brand__mark {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.1em;
+  gap: 0.12em;
 }
 
 .brand__word {
-  font-size: clamp(1.6rem, 3.5vw, 3.5rem);
+  font-size: clamp(1.7rem, 2.6vw, 2.7rem);
   color: var(--cream);
   text-shadow: 0 6px 0 rgba(0, 0, 0, 0.45);
+  line-height: 0.95;
+}
+
+/* Later in source order than .brand__word on purpose: same specificity,
+   so this wins for the red line. */
+.brand__word--red {
+  background: linear-gradient(180deg, #ff7a6e 0%, var(--red) 58%, #8f130f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.45)) drop-shadow(0 0 28px rgba(227, 38, 32, 0.45));
 }
 
 .brand__rule {
   display: block;
-  height: 4px;
-  margin: 0.35em 0 0.3em;
-  background: linear-gradient(
-    90deg,
-    var(--red) 0%,
-    var(--red) 62%,
-    var(--gold) 62%,
-    var(--gold) 78%,
-    transparent 78%
-  );
+  height: 3px;
+  margin: 0.5em 0 0.45em;
+  background: linear-gradient(90deg, var(--red) 0%, var(--red) 55%, var(--gold) 55%, var(--gold) 72%, transparent 72%);
   border-radius: 2px;
-  box-shadow: 0 2px 10px -2px rgba(227, 38, 32, 0.8);
+  box-shadow: 0 2px 12px -2px rgba(227, 38, 32, 0.8);
 }
 
 .brand__sub {
   font-size: var(--step-xs);
   font-weight: 700;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.3em;
   color: var(--muted);
 }
 
-/* --- the $15 combo card: cream torn paper --- */
+/* --- the $15 combo card: dark glass, gold price --- */
 .combo {
   position: relative;
-  align-self: flex-start;
-  padding: clamp(0.6rem, 1.1vh, 1rem) clamp(0.9rem, 1.5vw, 1.5rem) clamp(0.7rem, 1.2vh, 1.1rem);
+  align-self: stretch;
+  padding: clamp(0.9rem, 1.6vh, 1.3rem) clamp(1rem, 1.4vw, 1.4rem);
   background:
-    linear-gradient(180deg, rgba(255, 248, 232, 0.96), rgba(226, 210, 176, 0.9));
-  color: var(--ink);
-  border-radius: 4px 12px 6px 10px;
+    linear-gradient(180deg, rgba(255, 214, 150, 0.09) 0%, rgba(255, 214, 150, 0) 34%),
+    linear-gradient(180deg, rgba(28, 20, 14, 0.92), rgba(12, 8, 7, 0.94));
+  border: 1px solid rgba(246, 195, 68, 0.28);
+  border-radius: 18px;
   box-shadow:
-    0 18px 44px -22px #000,
-    inset 0 0 0 1px rgba(10, 9, 9, 0.12);
-  clip-path: polygon(
-    0% 3%, 2% 0%, 98% 2%, 100% 4%, 99.4% 98%, 97% 100%, 3% 99%, 0.6% 96%
-  );
-  max-width: 30ch;
-}
-.combo::after {
-  /* paper grain on the card */
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url('/assets/textures/paper_269.jpg');
-  background-size: 300px auto;
-  opacity: 0.13;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  border-radius: inherit;
+    0 24px 60px -28px #000,
+    0 0 60px -30px rgba(246, 195, 68, 0.4),
+    inset 0 1px 0 rgba(255, 232, 190, 0.14);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity var(--dur) var(--ease-out);
 }
 
 .combo__eyebrow {
   font-size: var(--step-xs);
   font-weight: 800;
-  letter-spacing: 0.26em;
-  color: var(--red-deep);
+  letter-spacing: 0.3em;
+  color: var(--gold);
 }
 
 .combo__price {
   font-family: var(--font-impact);
-  font-size: clamp(2.4rem, 5.2vw, 5rem);
-  line-height: 0.84;
-  color: var(--ink);
-  letter-spacing: -0.01em;
+  font-size: clamp(3rem, 4.6vw, 4.6rem);
+  line-height: 0.9;
+  background: linear-gradient(180deg, #fff3c4 10%, var(--gold) 55%, #c07f14 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.5)) drop-shadow(0 0 26px rgba(246, 195, 68, 0.35));
   display: flex;
   align-items: flex-start;
   gap: 0.06em;
 }
 .combo__dollar {
-  font-size: 0.46em;
-  margin-top: 0.16em;
-  color: var(--red);
+  font-size: 0.42em;
+  margin-top: 0.2em;
+  -webkit-text-fill-color: var(--red-hot);
 }
 
 .combo__items {
-  margin-top: 0.35rem;
+  margin-top: 0.5rem;
   font-size: var(--step-sm);
   font-weight: 700;
-  line-height: 1.28;
-  color: #3a302a;
+  line-height: 1.4;
+  color: var(--cream);
+  opacity: 0.92;
+  display: grid;
+  gap: 0.15rem;
 }
 .combo__items li {
   position: relative;
@@ -166,98 +165,30 @@
   content: '';
   position: absolute;
   left: 0;
-  top: 0.5em;
+  top: 0.52em;
   width: 0.42em;
   height: 0.42em;
-  background: var(--red);
+  background: var(--gold);
   rotate: 45deg;
+  box-shadow: 0 0 8px rgba(246, 195, 68, 0.8);
 }
 .combo__item--spin {
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   font-weight: 900;
-  color: var(--red-deep);
-  letter-spacing: 0.06em;
+  color: var(--gold-bright);
+  letter-spacing: 0.08em;
 }
 
-/* --- rotating promo line: exactly one message at a time --- */
-.promo {
-  position: relative;
-  height: clamp(1.9rem, 3.4vw, 2.9rem);
-  overflow: hidden;
-  min-width: 0;
-}
-.promo__text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  font-family: var(--font-impact);
-  font-size: clamp(1.05rem, 1.9vw, 1.9rem);
-  letter-spacing: 0.03em;
-  color: var(--gold);
-  text-transform: uppercase;
-  white-space: nowrap;
-  will-change: transform, opacity;
-}
-.promo__text.is-out {
-  animation: promo-out 520ms var(--ease-in-out) forwards;
-}
-.promo__text.is-in {
-  animation: promo-in 520ms var(--ease-out) forwards;
-}
-@keyframes promo-out {
-  to {
-    transform: translateY(-105%);
-    opacity: 0;
-  }
-}
-@keyframes promo-in {
-  from {
-    transform: translateY(105%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* --- the single strong CTA --- */
-.cta {
+/* --- static promise line: the only copy besides the card --- */
+.brand__promise {
   font-family: var(--font-display);
-  font-size: clamp(1.15rem, 2.3vw, 2.2rem);
-  color: var(--cream);
-  text-transform: uppercase;
-  line-height: 1;
-  position: relative;
-  align-self: flex-start;
-  padding: 0.28em 0.5em 0.34em 0.55em;
-}
-.cta::before {
-  content: '';
-  position: absolute;
-  inset: -0.1em -0.3em;
-  background-image: url('/assets/textures/inkpaint_306.jpg');
-  background-size: 60% auto;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.85;
-  z-index: -1;
-  rotate: -1.2deg;
-  filter: saturate(1.4) brightness(0.55) sepia(1) hue-rotate(-30deg);
-  -webkit-mask-image: url('/assets/textures/inkpaint_306.jpg');
-  mask-image: url('/assets/textures/inkpaint_306.jpg');
-  -webkit-mask-size: 60% auto;
-  mask-size: 60% auto;
-}
-.stage[data-armed='1'] .cta,
-.stage[data-armed='2'] .cta,
-.stage[data-armed='3'] .cta {
-  opacity: 0;
-  transform: translateY(8px);
-  transition:
-    opacity 380ms var(--ease-out),
-    transform 380ms var(--ease-out);
+  font-size: clamp(0.95rem, 1.4vw, 1.35rem);
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.45), 0 0 30px rgba(246, 195, 68, 0.3);
+  border-top: 1px solid var(--line);
+  padding-top: clamp(0.7rem, 1.6vh, 1.2rem);
 }
 
 /* =================================================================== RIG === */
@@ -285,7 +216,7 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: min(100%, calc(100vh - 13rem));
+  width: min(100%, calc(100vh - 15rem));
   aspect-ratio: 1;
   min-height: 0;
 }
@@ -296,6 +227,7 @@
   display: grid;
   place-items: center;
   will-change: transform;
+  overflow: clip;
 }
 
 .wheel-rot {
@@ -310,41 +242,13 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 26px 60px rgba(0, 0, 0, 0.72));
-}
-
-.wheel-rays {
-  position: absolute;
-  inset: -14%;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      rgba(246, 195, 68, 0.055) 8deg,
-      transparent 18deg,
-      transparent 44deg,
-      rgba(227, 38, 32, 0.05) 52deg,
-      transparent 64deg,
-      transparent 108deg,
-      rgba(246, 195, 68, 0.05) 118deg,
-      transparent 130deg
-    );
-  mask-image: radial-gradient(circle, #000 24%, transparent 72%);
-  -webkit-mask-image: radial-gradient(circle, #000 24%, transparent 72%);
-  animation: rays-turn 44s linear infinite;
-}
-@keyframes rays-turn {
-  to {
-    rotate: 360deg;
-  }
+  filter: drop-shadow(0 30px 70px rgba(0, 0, 0, 0.75));
 }
 
 /* --- marquee bulbs --- */
 .marquee {
   position: absolute;
-  inset: -3.4%;
+  inset: -3.2%;
   z-index: 2;
   pointer-events: none;
 }
@@ -352,9 +256,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: clamp(5px, 0.85vw, 11px);
+  width: clamp(6px, 0.9vw, 12px);
   aspect-ratio: 1;
-  margin: calc(clamp(5px, 0.85vw, 11px) / -2);
+  margin: calc(clamp(6px, 0.9vw, 12px) / -2);
   border-radius: 50%;
   background: var(--gold);
   box-shadow:
@@ -386,14 +290,14 @@
 /* --- pointer --- */
 .pointer {
   position: absolute;
-  top: -1.5%;
+  top: -1.2%;
   left: 50%;
   translate: -50% 0;
-  width: clamp(34px, 4.2vw, 74px);
+  width: clamp(40px, 4.6vw, 84px);
   z-index: 9;
   transform-origin: 50% 8%;
   will-change: transform, filter;
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.75));
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 18px rgba(246, 195, 68, 0.45));
 }
 .pointer__svg {
   display: block;
@@ -407,7 +311,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(0.3rem, 0.9vh, 0.8rem);
+  gap: clamp(0.3rem, 0.9vh, 0.7rem);
   padding-bottom: 0.2rem;
 }
 
@@ -420,14 +324,18 @@
 }
 .turncue__line {
   font-family: var(--font-display);
-  font-size: clamp(1rem, 1.9vw, 1.85rem);
-  color: var(--gold);
+  font-size: clamp(1.1rem, 2vw, 2rem);
+  background: linear-gradient(180deg, #fff3c4, var(--gold) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.5));
   letter-spacing: 0.06em;
 }
 .turncue__sub {
   font-size: var(--step-sm);
   font-weight: 800;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.32em;
   color: var(--cream);
   opacity: 0.85;
 }
@@ -443,8 +351,8 @@
   display: grid;
   place-items: center;
   gap: 0;
-  width: clamp(190px, 21vw, 340px);
-  aspect-ratio: 3.1 / 1;
+  width: clamp(220px, 22vw, 360px);
+  aspect-ratio: 3.2 / 1;
   border-radius: 999px;
   background:
     radial-gradient(120% 150% at 50% -20%, #ff6a5e 0%, var(--red) 42%, var(--red-deep) 100%);
@@ -510,7 +418,7 @@
   }
 }
 .spinbtn__label {
-  font-size: clamp(1.6rem, 3.1vw, 3.1rem);
+  font-size: clamp(1.7rem, 3.2vw, 3.2rem);
   letter-spacing: 0.1em;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
   line-height: 1;
@@ -526,60 +434,22 @@
   pointer-events: none;
 }
 
-/* ============================================================== MASCOT === */
-
-.mascot {
-  position: absolute;
-  left: -2%;
-  bottom: -4%;
-  width: clamp(120px, 15vw, 230px);
-  aspect-ratio: 1;
-  pointer-events: none;
+/* --- honest microcopy: slices are equal, odds live in Settings --- */
+.spinbar__odds {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.26em;
+  text-indent: 0.26em;
+  color: var(--muted);
   opacity: 0.9;
-  z-index: -1;
-  will-change: transform;
-}
-.mascot svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.6));
-}
-.mascot__lid {
-  transform-origin: 50% 50%;
-  transition: transform 220ms var(--ease-snap);
-}
-.mascot.is-pointing .mascot__wing--r {
-  transform: rotate(-24deg) translateX(6px);
-}
-.mascot__eye {
-  transform-origin: 50% 50%;
-}
-.mascot.is-blinking .mascot__eye {
-  transform: scaleY(0.08);
-}
-.mascot__glint {
-  animation: glint 6.5s ease-in-out infinite;
-}
-@keyframes glint {
-  0%,
-  88%,
-  100% {
-    opacity: 0;
-  }
-  92% {
-    opacity: 0.95;
-  }
-  96% {
-    opacity: 0;
-  }
+  white-space: nowrap;
 }
 
 /* ====================================================== RESPONSIVE / FIT === */
 
 @media (max-width: 1400px), (max-height: 800px) {
   .stage {
-    grid-template-columns: minmax(300px, 35fr) minmax(0, 65fr);
+    grid-template-columns: minmax(270px, 300px) minmax(0, 1fr);
   }
   .combo__items {
     font-size: var(--step-xs);
@@ -591,6 +461,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     overflow-y: auto;
+    gap: 0.75rem;
   }
   .brand {
     flex-direction: row;
@@ -598,21 +469,23 @@
     align-items: center;
     gap: var(--s-4);
   }
-  .mascot {
-    display: none;
+  .brand__mark {
+    flex: 1 1 220px;
+  }
+  .combo {
+    flex: 1 1 220px;
+  }
+  .brand__promise {
+    flex: 1 1 100%;
+    border-top: 0;
+    padding-top: 0;
+    text-align: center;
   }
   .wheel-mount {
-    width: min(100%, 74vh);
+    width: min(100%, 66vh);
   }
-  /* The ray layer hangs 14% outside the wheel and is masked to nothing well
-     before it gets there, so it painted nothing at the edge — but it still
-     counted toward the stage's scrollable overflow and gave the single-column
-     layout 127px of phantom scroll, which on a touch screen means the whole
-     page can be dragged into empty space. Clipping the layer that carries it
-     removes the range and cuts nothing, because the mask has already faded to
-     zero inside this box. The pointer is a sibling of .wheel-scale, so it
-     keeps its overhang. */
-  .wheel-scale {
-    overflow: clip;
+  .spinbar__odds {
+    white-space: normal;
+    text-align: center;
   }
 }

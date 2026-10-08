@@ -1,8 +1,9 @@
 /**
  * Wheel geometry: requirements 5 and 6.
  *
- * The visible arc must be the actual probability, the planned stop must land in
- * the drawn sector, and no amount of rounding may put the pointer on a boundary.
+ * Every sector is an EQUAL slice (360 / n) while the draw stays weighted; the
+ * planned stop must land in the drawn sector, and no amount of rounding may
+ * put the pointer on a boundary.
  */
 import { afterEach, describe, expect, it } from 'vitest'
 import { prizeDefinitions, ui } from '../src/config/eventConfig.ts'
@@ -25,11 +26,12 @@ function sectorsFor(inv: InventoryState = fullInventory()): Sector[] {
   return buildSectors(prizeDefinitions.filter((p) => inv && p.weight > 0), 0)
 }
 
-describe('sector geometry mirrors the odds', () => {
-  it('each sector sweep is exactly proportional to its weight', () => {
+describe('sectors are equal slices, odds stay weighted', () => {
+  it('every sector sweep is exactly 360 / n', () => {
     const sectors = buildSectors(prizeDefinitions, 0)
     for (const s of sectors) {
-      expect(s.sweep).toBeCloseTo((s.prize.weight / 100) * 360, 10)
+      expect(s.sweep).toBeCloseTo(360 / prizeDefinitions.length, 10)
+      // ...while the draw probability is still the weight share.
       expect(s.probability).toBeCloseTo(s.prize.weight / 100, 10)
     }
   })
@@ -44,19 +46,21 @@ describe('sector geometry mirrors the odds', () => {
     expect(total).toBeCloseTo(360, 8)
   })
 
-  it('the 3% jackpot really is a 10.8° sliver and the 25% sauce wedge is 90°', () => {
+  it('the 3% jackpot and the 25% sauce wedge render at the same size', () => {
     const sectors = buildSectors(prizeDefinitions, 0)
     const jackpot = sectors.find((s) => s.id === 'free-combo')!
     const sauce = sectors.find((s) => s.id === 'sauce-upgrade')!
-    expect(jackpot.sweep).toBeCloseTo(10.8, 6)
-    expect(sauce.sweep).toBeCloseTo(90, 6)
+    expect(jackpot.sweep).toBeCloseTo(360 / prizeDefinitions.length, 6)
+    expect(sauce.sweep).toBeCloseTo(360 / prizeDefinitions.length, 6)
+    // Odds unchanged: jackpot rarest, sauce most common.
+    expect(jackpot.probability).toBeLessThan(sauce.probability)
   })
 
-  it('renormalises when a prize is excluded', () => {
+  it('re-slices evenly when a prize is excluded', () => {
     const pool = prizeDefinitions.filter((p) => p.id !== 'mystery-box')
     const sectors = buildSectors(pool, 0)
     const sauce = sectors.find((s) => s.id === 'sauce-upgrade')!
-    expect(sauce.sweep).toBeCloseTo((25 / 94) * 360, 8)
+    expect(sauce.sweep).toBeCloseTo(360 / pool.length, 8)
     expect(sectors.reduce((a, s) => a + s.sweep, 0)).toBeCloseTo(360, 8)
   })
 

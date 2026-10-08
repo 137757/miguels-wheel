@@ -1,9 +1,10 @@
 /**
  * Wheel geometry.
  *
- * Sectors are *derived* from the prize weights, so the arc you see is the
- * probability you get. Eight equal-looking wedges with hidden unequal odds would
- * undermine the entire physical-wheel illusion.
+ * Every sector gets an EQUAL slice (360° / n) so the wheel always looks clean
+ * and balanced no matter how the odds are tuned in Settings. The DRAW odds
+ * stay weighted (`Sector.probability` = weight share) — geometry is display,
+ * weights decide the prize. The exact % per segment is shown in Settings.
  *
  * Angle convention: 0° points right, increasing clockwise on screen (because SVG
  * y grows downward). The pointer lives at 12 o'clock = -90°.
@@ -19,31 +20,44 @@ export interface Sector {
   start: number
   /** End angle in degrees (exclusive), clockwise from 3 o'clock. */
   end: number
-  /** Angular width in degrees. */
+  /** Angular width in degrees — always 360 / n (equal slices). */
   sweep: number
   /** Midpoint of the sector. */
   mid: number
-  /** Probability as a fraction of the frozen pool (i.e. sweep / 360). */
+  /** Weighted draw probability as a fraction of the frozen pool (weight share). */
   probability: number
 }
 
 const FULL = 360
 
 /**
- * Build sectors from a frozen prize pool. `offsetDeg` rotates the whole wheel so
- * that sector 0 does not always begin at 3 o'clock.
+ * Build EQUAL sectors from a frozen prize pool. `offsetDeg` rotates the whole
+ * wheel so that sector 0 does not always begin at 3 o'clock.
+ *
+ * The slice a customer sees is always 360/n; the chance of landing on it is
+ * the prize's weight share. Both come from the same filtered pool, so a sector
+ * can never be on screen with zero chance of being drawn.
  */
 export function buildSectors(prizes: PrizeDefinition[], offsetDeg = 0): Sector[] {
+  if (prizes.length === 0) throw new Error('Cannot build a wheel with zero prizes')
   const total = prizes.reduce((a, p) => a + p.weight, 0)
   if (total <= 0) throw new Error('Cannot build a wheel with zero total weight')
 
+  const sweep = FULL / prizes.length
   const out: Sector[] = []
   let cursor = offsetDeg % FULL
   for (const prize of prizes) {
-    const sweep = (prize.weight / total) * FULL
     const start = normalise(cursor)
     const end = normalise(cursor + sweep)
-    out.push({ id: prize.id, prize, start, end, sweep, mid: normalise(start + sweep / 2), probability: sweep / FULL })
+    out.push({
+      id: prize.id,
+      prize,
+      start,
+      end,
+      sweep,
+      mid: normalise(start + sweep / 2),
+      probability: prize.weight / total,
+    })
     cursor += sweep
   }
   return out

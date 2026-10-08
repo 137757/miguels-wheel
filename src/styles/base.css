@@ -22,9 +22,13 @@ body {
 }
 
 body {
-  /* A faint warm centre so the wheel reads as lit, not pasted on. */
+  /* Lit stage: warm stall light around the wheel, gold kiss at the rail, ink
+     everywhere else. Static gradients only — the motion lives in the lantern
+     glow, the marquee and the gold dust. */
   background:
-    radial-gradient(120% 90% at 68% 44%, #241a17 0%, #140f0e 42%, var(--ink) 78%),
+    radial-gradient(58% 46% at 74% 34%, rgba(227, 38, 32, 0.1) 0%, rgba(227, 38, 32, 0) 70%),
+    radial-gradient(44% 38% at 12% 88%, rgba(246, 195, 68, 0.07) 0%, rgba(246, 195, 68, 0) 70%),
+    radial-gradient(120% 90% at 68% 44%, #261b16 0%, #141010 46%, var(--ink) 80%),
     var(--ink);
   cursor: default;
   user-select: none;
@@ -136,43 +140,6 @@ kbd {
   }
   50% {
     opacity: 1;
-  }
-}
-
-/* Drifting blossom petals. */
-.petals {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  overflow: hidden;
-}
-.petal {
-  position: absolute;
-  top: -6vh;
-  width: var(--size, 22px);
-  height: var(--size, 22px);
-  border-radius: 52% 48% 55% 45% / 60% 55% 45% 40%;
-  background: linear-gradient(140deg, #ffd0de, #ff7ea1);
-  opacity: 0;
-  filter: blur(0.3px);
-  animation: petal-fall var(--dur, 17s) linear var(--delay, 0s) infinite;
-}
-
-@keyframes petal-fall {
-  0% {
-    transform: translate3d(0, -8vh, 0) rotate(0deg);
-    opacity: 0;
-  }
-  12% {
-    opacity: 0.42;
-  }
-  88% {
-    opacity: 0.3;
-  }
-  100% {
-    transform: translate3d(var(--sway, 14vw), 112vh, 0) rotate(520deg);
-    opacity: 0;
   }
 }
 

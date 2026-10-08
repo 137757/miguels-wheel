@@ -161,13 +161,14 @@ describe('13 — inventory reaching zero removes prize eligibility and its secto
     expect(sectors.reduce((a, s) => a + s.sweep, 0)).toBeCloseTo(360, 8)
   })
 
-  it('the remaining odds scale up proportionally', () => {
+  it('the remaining odds scale up proportionally (slices stay equal)', () => {
     const inv = inventoryWithZero('extraDrink')
     const pool = activePrizes(inv)
     const sectors = buildSectors(pool, 0)
     const sauce = sectors.find((s) => s.id === 'sauce-upgrade')!
-    // 25 of the remaining 80 weight.
-    expect(sauce.sweep).toBeCloseTo((25 / 80) * 360, 8)
+    // Slices are re-cut evenly; the DRAW odds are 25 of the remaining 80.
+    expect(sauce.sweep).toBeCloseTo(360 / pool.length, 8)
+    expect(sauce.probability).toBeCloseTo(25 / 80, 8)
   })
 
   it('an ineligible prize can never be drawn', () => {
@@ -194,12 +195,12 @@ describe('13 — inventory reaching zero removes prize eligibility and its secto
     expect(ids).toHaveLength(4)
   })
 
-  it('the jackpot remains the rarest sector after renormalisation', () => {
+  it('the jackpot remains the rarest draw after renormalisation', () => {
     const inv = inventoryWithZero('extraDrink')
     const sectors = buildSectors(activePrizes(inv), 0)
     const jackpot = sectors.find((s) => s.id === 'free-combo')!
-    const smallest = Math.min(...sectors.filter((s) => s.id !== 'free-combo').map((s) => s.sweep))
-    expect(jackpot.sweep).toBeLessThan(smallest)
+    const smallest = Math.min(...sectors.filter((s) => s.id !== 'free-combo').map((s) => s.probability))
+    expect(jackpot.probability).toBeLessThan(smallest)
   })
 
   it('a plan for an exhausted prize is refused rather than drawn', () => {

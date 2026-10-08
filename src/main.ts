@@ -49,7 +49,6 @@ import { EventStore, newSpinId, type PendingSpin, type SpinRecord } from './core
 import { WheelView } from './ui/wheelView.ts'
 import { Revealer } from './ui/reveal.ts'
 import { MysteryBox } from './ui/mystery.ts'
-import { Mascot, Petals, PromoRotator } from './ui/atmosphere.ts'
 import { StaffPanel } from './ui/staffPanel.ts'
 import { SettingsPanel } from './ui/settings.ts'
 import { PreflightScreen } from './ui/preflight.ts'
@@ -112,9 +111,7 @@ const dom = {
   pointer: el('pointer'),
   spinBtn: el<HTMLButtonElement>('spinBtn'),
   turnCue: el('turnCue'),
-  promoText: el('promoText'),
-  mascot: el('mascot'),
-  ctaText: el('ctaText'),
+  oddsLine: el('oddsLine'),
   comboCard: el('comboCard'),
   reveal: el('reveal'),
   revealScrim: el('revealScrim'),
@@ -131,7 +128,6 @@ const dom = {
   glamCanvas: el<HTMLCanvasElement>('glamCanvas'),
   testWatermark: el('testWatermark'),
   toast: el('toast'),
-  petals: el('petals'),
 }
 
 /* ------------------------------------------------------------------- views --- */
@@ -152,9 +148,6 @@ const revealer = new Revealer(
   reducedMotion,
 )
 const mystery = new MysteryBox(dom.mystery, reducedMotion)
-const petals = new Petals(dom.petals, reducedMotion ? 2 : 5)
-const promo = new PromoRotator(dom.promoText, reducedMotion)
-const mascot = new Mascot(dom.mascot, reducedMotion)
 const glam = new GlamField(dom.glamCanvas, reducedMotion, reducedMotion ? 0 : 70)
 
 const preflight = new PreflightScreen(dom.preflight)
@@ -167,12 +160,10 @@ const perf = new PerfGuard()
 perf.onChange((lite) => {
   if (lite) {
     wheel.stopSheen()
-    petals.stop()
     glam.stop()
     document.body.classList.add('perf-lite')
     console.info('[perf] Low frame rate detected — reducing decorative effects to keep the wheel smooth.')
   } else {
-    petals.start()
     glam.start()
     document.body.classList.remove('perf-lite')
   }
@@ -258,21 +249,15 @@ function paintPublicState(): void {
     wheel.startIdleRock()
     wheel.setArmed(false)
     wheel.setMarqueeSpeed(1)
-    mascot.setPose('idle')
-    promo.start()
   } else if (st === 'ARMED' || st === 'BONUS_ARMED') {
     wheel.stopIdleRock()
     wheel.setArmed(true)
     wheel.setMarqueeSpeed(2.1)
-    mascot.setPose('point')
-    promo.stop()
   } else if (st === 'SPINNING' || st === 'REVEAL') {
     wheel.stopIdleRock()
-    promo.stop()
     wheel.setMarqueeSpeed(3.4)
   } else {
     wheel.stopIdleRock()
-    promo.start()
   }
 
   if (st !== 'IDLE' && st !== 'ARMED' && st !== 'BONUS_ARMED') {
@@ -280,7 +265,7 @@ function paintPublicState(): void {
   } else {
     dom.comboCard.style.opacity = ''
   }
-  dom.ctaText.textContent = st === 'IDLE' ? 'EVERY SPIN WINS' : 'EVERY SPIN WINS'
+  dom.oddsLine.textContent = `${renderedSectors.length || store.getPrizes().length} EQUAL SLICES · TRUE ODDS IN SETTINGS`
 
   staff.render()
 }
@@ -707,8 +692,6 @@ async function runReveal(prize: PrizeDefinition, _inv: InventoryState): Promise<
   if (prize.tier === 'JACKPOT') glam.jackpotRain()
   else glam.burst(0.5, 0.42, prize.tier === 'RARE' ? 55 : prize.tier === 'MID' ? 32 : 20)
 
-  mascot.setPose(prize.tier === 'JACKPOT' ? 'cheer' : prize.tier === 'RARE' ? 'surprise' : 'thumbs')
-  mascot.cheer()
   audio.play(prize.sfx, { volume: 0.85 })
 
   await revealer.show(prize, store.inventory)
@@ -748,7 +731,6 @@ async function runMystery(): Promise<void> {
   if (cost && pending.mode === 'LIVE') store.consumeStock(cost.unit, cost.amount)
   store.setPending(pending)
 
-  mascot.setPose('surprise')
   await mystery.run(mysteryPrize, finalCents, audio)
   revealBusy = false
   if (mysteryPrize.grantsBonusSpin) {
@@ -1070,9 +1052,7 @@ function enterLive(): void {
 
   if (store.settings.mode !== 'LIVE') store.patchSettings({ mode: 'LIVE' })
 
-  petals.start()
   glam.start()
-  mascot.start()
   refreshWheel()
 
   const pending = store.pending

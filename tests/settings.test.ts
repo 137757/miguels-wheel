@@ -69,8 +69,8 @@ describe('settings — validation catches bad wheels', () => {
   })
 })
 
-describe('settings — geometry matches custom odds', () => {
-  it('sector sweep equals weight share for a custom 50/30/20 wheel', () => {
+describe('settings — equal slices, weighted draws for custom wheels', () => {
+  it('a custom 50/30/20 wheel renders equal thirds with weighted odds', () => {
     const prizes = defaultPrizeList().slice(0, 3)
     prizes[0]!.weight = 50
     prizes[1]!.weight = 30
@@ -80,9 +80,10 @@ describe('settings — geometry matches custom odds', () => {
     prizes[2]!.tier = 'JACKPOT'
     // jackpot (20) is rarest — valid by construction
     const sectors = buildSectors(prizes, 0)
-    expect(sectors[0]!.sweep).toBeCloseTo(180, 6)
-    expect(sectors[1]!.sweep).toBeCloseTo(108, 6)
-    expect(sectors[2]!.sweep).toBeCloseTo(72, 6)
+    for (const s of sectors) expect(s.sweep).toBeCloseTo(120, 6)
+    expect(sectors[0]!.probability).toBeCloseTo(0.5, 8)
+    expect(sectors[1]!.probability).toBeCloseTo(0.3, 8)
+    expect(sectors[2]!.probability).toBeCloseTo(0.2, 8)
     expect(activeWeightTotal(prizes)).toBe(100)
   })
 

@@ -136,10 +136,7 @@
  * Enabled from main.ts once real frames have been measured.
  */
 body.perf-lite .tex--ink,
-body.perf-lite .tex--grunge,
-body.perf-lite .wheel-rays,
-body.perf-lite .petals,
-body.perf-lite .mascot__glint {
+body.perf-lite .tex--grunge {
   display: none;
 }
 

@@ -693,13 +693,10 @@
    mascot's glint all ran forever for a visitor who had asked their OS to stop
    exactly this. Any new decorative loop has to be added here. */
 @media (prefers-reduced-motion: reduce) {
-  .wheel-rays,
-  .petal,
   .spinbtn:not([disabled]),
   .spinbtn__ring,
   .lantern-glow,
   .tex,
-  .mascot__glint,
   .start__wheel-mark svg,
   .btn-start {
     animation: none !important;

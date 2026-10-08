@@ -1,9 +1,9 @@
 /**
  * Prize eligibility, weighted selection and price resolution.
  *
- * The wheel's *visible* geometry and the *selection* weights are derived from the
- * same filtered prize list, so a sector can never be on screen with zero chance of
- * being drawn.
+ * Sectors are EQUAL slices; the *selection* is weighted by the same filtered
+ * prize list, so a sector can never be on screen with zero chance of being
+ * drawn. The exact % per segment is configured in Settings.
  */
 
 import {

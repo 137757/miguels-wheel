@@ -424,9 +424,13 @@ export class Revealer {
       <p class="prize__hint">tell the counter your prize</p>
     `
     layer.appendChild(pay)
+    // Veil sits UNDER the words so JACKPOT / FREE COMBO stay vivid — it only
+    // deepens the wash behind the PAY badge.
     const scrim = document.createElement('div')
-    scrim.style.cssText = 'position:absolute;inset:0;background:rgba(28,12,2,.34)'
-    layer.insertBefore(scrim, pay)
+    scrim.style.cssText = 'position:absolute;inset:0;background:rgba(28,12,2,.28)'
+    const word = layer.querySelector('.jackpot-layer__word')
+    if (word) layer.insertBefore(scrim, word)
+    else layer.insertBefore(scrim, pay)
     gsap.fromTo(pay, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: this.#d(0.4), ease: 'back.out(2)' })
   }
 

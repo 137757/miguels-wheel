@@ -122,19 +122,26 @@
 .glam-flash--rare { background: radial-gradient(65% 55% at 50% 45%, rgba(255, 106, 92, 0.95), rgba(227, 38, 32, 0.4) 60%, transparent 84%); }
 .glam-flash--jackpot { background: radial-gradient(75% 65% at 50% 42%, #fff3c4 0%, rgba(255, 194, 31, 0.9) 34%, rgba(207, 122, 12, 0.5) 62%, transparent 85%); }
 
-/* Jackpot words get an animated glitter gradient */
+/* Jackpot words: solid molten gold with deep offset + halo. (An animated
+   background-clip:text shimmer was tried here and rendered near-black in some
+   Chromium builds when combined with drop-shadow filters — solid wins.) */
 .jackpot-layer__free {
-  background: linear-gradient(100deg, #ffc21f 20%, #fff6da 40%, #ffc21f 60%);
-  background-size: 220% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: glam-goldflow 2.4s linear infinite;
-  filter: drop-shadow(0 10px 0 rgba(48, 20, 0, 0.8)) drop-shadow(0 0 60px rgba(255, 190, 60, 0.9));
+  color: #ffc21f;
+  text-shadow:
+    0 10px 0 rgba(48, 20, 0, 0.8),
+    0 0 60px rgba(255, 190, 60, 0.95),
+    0 0 130px rgba(255, 150, 20, 0.8);
+  animation: glam-freepulse 2.4s ease-in-out infinite;
 }
+@keyframes glam-freepulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
+/* Gentle brightness shimmer (transform/filter only — always paints). */
 @keyframes glam-goldflow {
-  0% { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.12); }
 }
 
 /* Start screen title shimmer */
