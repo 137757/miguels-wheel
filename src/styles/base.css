@@ -1,0 +1,348 @@
+/* =========================================================================
+   Base: reset, texture atmosphere, typography, buttons.
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  /* A faint warm centre so the wheel reads as lit, not pasted on. */
+  background:
+    radial-gradient(120% 90% at 68% 44%, #241a17 0%, #140f0e 42%, var(--ink) 78%),
+    var(--ink);
+  cursor: default;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+li {
+  margin: 0;
+  padding: 0;
+}
+ul {
+  list-style: none;
+}
+
+kbd {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  background: rgba(242, 228, 196, 0.12);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.05em 0.42em;
+  font-size: 0.92em;
+}
+
+/* --------------------------------------------------------------- textures */
+/*
+ * Four real downloaded textures, layered at 5–14% opacity. Never a full veil.
+
+ * These are deliberately NOT animated. A full-screen blended layer that moves
+ * forces a multi-megapixel repaint plus a re-blend on every single frame, which
+ * was measured to be the single largest cost in the whole application and was
+ * slow enough to push GSAP into clamping time (making the 6-second spin take
+ * far longer than six seconds). Static texture, cheap motion elsewhere.
+ * The grain still reads as alive because the lantern glow, petals, marquee and
+ * wheel all move over it.
+ */
+
+.tex {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-repeat: repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.tex--paper {
+  background-image: url('/assets/textures/paper_269.jpg');
+  opacity: 0.1;
+  mix-blend-mode: overlay;
+}
+
+.tex--paper-dark {
+  background-image: url('/assets/textures/paper_183.jpg');
+  opacity: 0.12;
+  mix-blend-mode: soft-light;
+  background-size: 140% auto;
+}
+
+.tex--ink {
+  background-image: url('/assets/textures/inkpaint_306.jpg');
+  background-size: 130% auto;
+  opacity: 0.085;
+  mix-blend-mode: screen;
+}
+
+.tex--grunge {
+  background-image: url('/assets/textures/grunge_336.jpg');
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+}
+
+/* Breathing lantern warmth behind the wheel. Opacity only, so it composites
+ * rather than repaints. */
+.lantern-glow {
+  position: fixed;
+  left: 50%;
+  top: 52%;
+  width: min(120vw, 1500px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  z-index: 0;
+  pointer-events: none;
+  will-change: opacity;
+  background: radial-gradient(
+    circle,
+    rgba(227, 38, 32, 0.18) 0%,
+    rgba(246, 195, 68, 0.08) 38%,
+    rgba(10, 9, 9, 0) 68%
+  );
+  animation: lantern-breathe 7.5s ease-in-out infinite;
+}
+
+@keyframes lantern-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Drifting blossom petals. */
+.petals {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+.petal {
+  position: absolute;
+  top: -6vh;
+  width: var(--size, 22px);
+  height: var(--size, 22px);
+  border-radius: 52% 48% 55% 45% / 60% 55% 45% 40%;
+  background: linear-gradient(140deg, #ffd0de, #ff7ea1);
+  opacity: 0;
+  filter: blur(0.3px);
+  animation: petal-fall var(--dur, 17s) linear var(--delay, 0s) infinite;
+}
+
+@keyframes petal-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.42;
+  }
+  88% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translate3d(var(--sway, 14vw), 112vh, 0) rotate(520deg);
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------ typography */
+
+.h-display,
+.brand__word,
+.start__title-line,
+.spinbtn__label,
+.mb-korean {
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  line-height: 0.92;
+}
+
+.h-display {
+  font-size: var(--step-2xl);
+  color: var(--cream);
+  text-transform: uppercase;
+}
+
+/* Brush/display weight for the wordmark only — never small body copy. */
+.brand__word--brush,
+.start__title-line--brush {
+  font-family: var(--font-display);
+}
+
+.brand__word--red {
+  color: var(--red);
+  -webkit-text-stroke: 1px rgba(242, 228, 196, 0.16);
+}
+
+.korean-mark {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn,
+.btn-start,
+.spinbtn,
+.staff__btn {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  border: 0;
+  cursor: pointer;
+  color: var(--cream);
+  background: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-snap),
+    filter var(--dur-fast) linear,
+    box-shadow var(--dur) var(--ease-out);
+}
+/* Every control on the page has to show where the keyboard is. This list is
+   the whole focusable surface: the four declared controls, the panel's close
+   and steppers, the danger-dialog field, and the recovery overlay. A control
+   added later that is not listed here is a control nobody on a keyboard can
+   find, so the last entry is a catch-all rather than a shortcut. */
+.btn:focus-visible,
+.btn-start:focus-visible,
+.spinbtn:focus-visible,
+.staff__btn:focus-visible,
+.staff__close:focus-visible,
+.sinv__step:focus-visible,
+.danger__input:focus-visible,
+[role='button']:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.btn {
+  padding: 0.72rem 1.3rem;
+  border-radius: 10px;
+  border: 2px solid var(--line);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: var(--step-sm);
+  background: rgba(242, 228, 196, 0.05);
+}
+.btn:hover:not(:disabled) {
+  background: rgba(242, 228, 196, 0.11);
+  transform: translateY(-1px);
+}
+.btn:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+.btn--go {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--cream-bright);
+  box-shadow: 0 10px 34px -12px rgba(227, 38, 32, 0.9);
+}
+.btn--go:hover:not(:disabled) {
+  background: var(--red-hot);
+}
+.btn--ghost {
+  border-style: dashed;
+}
+.btn--danger {
+  border-color: rgba(255, 90, 78, 0.6);
+  color: #ffb3ac;
+}
+.btn--danger:hover:not(:disabled) {
+  background: rgba(255, 90, 78, 0.14);
+}
+
+/* ------------------------------------------------------------ test mark */
+
+.test-watermark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  padding: 0.3rem 1.1rem 0.35rem;
+  font-size: var(--step-sm);
+  font-weight: 900;
+  letter-spacing: 0.28em;
+  color: var(--ink);
+  background: var(--gold);
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+}
+
+/* ------------------------------------------------------------------ toast */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2.2rem;
+  translate: -50% 0;
+  z-index: 120;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  background: rgba(10, 9, 9, 0.94);
+  border: 1px solid var(--line);
+  color: var(--cream);
+  font-size: var(--step-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  box-shadow: 0 20px 50px -22px #000;
+  animation: toast-in var(--dur) var(--ease-snap);
+}
+.toast--bad {
+  border-color: rgba(255, 90, 78, 0.6);
+  color: #ffb3ac;
+}
+.toast--good {
+  border-color: rgba(78, 194, 122, 0.6);
+  color: #b6f0cb;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    translate: -50% 14px;
+  }
+  to {
+    opacity: 1;
+    translate: -50% 0;
+  }
+}
+
+.noscript {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--cream);
+  font-size: var(--step-xl);
+  z-index: 999;
+}

@@ -1,0 +1,171 @@
+/* =========================================================================
+   Glam: gold dust, glow, shine. Decorative only — never affects the draw.
+   ========================================================================= */
+
+#glamCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* Cinematic vignette + top light for glamour depth */
+.glam-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(90% 70% at 50% 38%, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, 0.5) 100%),
+    linear-gradient(180deg, rgba(255, 214, 150, 0.05) 0%, rgba(0, 0, 0, 0) 22%);
+}
+
+/* Wheel halo: breathing gold aura behind the rig */
+.wheel-mount::before {
+  content: '';
+  position: absolute;
+  inset: -9%;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, rgba(246, 195, 68, 0.22) 0%, rgba(227, 38, 32, 0.1) 42%, rgba(0, 0, 0, 0) 68%);
+  filter: blur(6px);
+  animation: glam-halo 4.2s ease-in-out infinite;
+}
+@keyframes glam-halo {
+  0%, 100% { opacity: 0.65; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* Armed / spinning: wheel burns brighter */
+.stage[data-armed='1'] .wheel-mount::before { opacity: 1; filter: blur(4px) saturate(1.3); }
+.stage[data-armed='2'] .wheel-mount::before {
+  animation: glam-halo-spin 1.1s ease-in-out infinite;
+  background: radial-gradient(circle, rgba(255, 224, 138, 0.34) 0%, rgba(246, 195, 68, 0.16) 44%, rgba(0, 0, 0, 0) 70%);
+}
+@keyframes glam-halo-spin {
+  0%, 100% { opacity: 0.8; transform: scale(1.02) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.08) rotate(4deg); }
+}
+
+/* Rotating conic shimmer ring around the wheel */
+.wheel-mount::after {
+  content: '';
+  position: absolute;
+  inset: -4.5%;
+  z-index: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  padding: 2px;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255, 224, 138, 0.9) 24deg, transparent 60deg, transparent 180deg, rgba(255, 79, 123, 0.7) 205deg, transparent 240deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  animation: glam-ring 9s linear infinite;
+}
+@keyframes glam-ring { to { transform: rotate(360deg); } }
+.stage[data-armed='2'] .wheel-mount::after { opacity: 0.95; animation-duration: 2.2s; }
+
+/* SPIN button: liquid gold shine sweep */
+.spinbtn:not([disabled])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 248, 232, 0.55) 48%, rgba(255, 224, 138, 0.75) 52%, transparent 62%);
+  transform: translateX(-120%);
+  animation: glam-btnshine 2.8s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+@keyframes glam-btnshine {
+  0% { transform: translateX(-120%); opacity: 0; }
+  18% { opacity: 1; }
+  55%, 100% { transform: translateX(120%); opacity: 0; }
+}
+
+/* Marquee bulbs get a hotter bloom */
+.bulb.is-hot {
+  background: #fff3c4 !important;
+}
+
+/* Reveal cards: rising gold particles + shine sweep target */
+.prize { overflow: visible; }
+.glam-shine {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 34%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 248, 232, 0.5) 45%, rgba(255, 224, 138, 0.7) 55%, transparent);
+  filter: blur(2px);
+  mix-blend-mode: screen;
+}
+
+/* Win flash tints */
+.glam-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  pointer-events: none;
+  opacity: 0;
+}
+.glam-flash--common { background: radial-gradient(60% 50% at 50% 45%, rgba(255, 224, 138, 0.9), rgba(246, 195, 68, 0.25) 60%, transparent 80%); }
+.glam-flash--mid { background: radial-gradient(60% 50% at 50% 45%, rgba(255, 150, 120, 0.9), rgba(227, 38, 32, 0.3) 60%, transparent 82%); }
+.glam-flash--special { background: radial-gradient(60% 55% at 50% 45%, rgba(255, 79, 123, 0.85), rgba(246, 195, 68, 0.35) 58%, transparent 82%); }
+.glam-flash--rare { background: radial-gradient(65% 55% at 50% 45%, rgba(255, 106, 92, 0.95), rgba(227, 38, 32, 0.4) 60%, transparent 84%); }
+.glam-flash--jackpot { background: radial-gradient(75% 65% at 50% 42%, #fff3c4 0%, rgba(255, 194, 31, 0.9) 34%, rgba(207, 122, 12, 0.5) 62%, transparent 85%); }
+
+/* Jackpot words get an animated glitter gradient */
+.jackpot-layer__free {
+  background: linear-gradient(100deg, #ffc21f 20%, #fff6da 40%, #ffc21f 60%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: glam-goldflow 2.4s linear infinite;
+  filter: drop-shadow(0 10px 0 rgba(48, 20, 0, 0.8)) drop-shadow(0 0 60px rgba(255, 190, 60, 0.9));
+}
+@keyframes glam-goldflow {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+/* Start screen title shimmer */
+.start__title-line {
+  background: linear-gradient(100deg, var(--cream-bright) 30%, #fff 45%, var(--cream-bright) 60%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: glam-goldflow 7s ease-in-out infinite;
+}
+.start__title-line--red {
+  background: linear-gradient(100deg, var(--red) 25%, #ff7a6e 45%, var(--red) 65%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: glam-goldflow 5.5s ease-in-out infinite;
+}
+
+/* Perf + reduced-motion: keep glow, drop animation */
+body.perf-lite #glamCanvas { display: none; }
+body.perf-lite .wheel-mount::before,
+body.perf-lite .wheel-mount::after { animation: none; opacity: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  #glamCanvas,
+  .wheel-mount::before,
+  .wheel-mount::after,
+  .spinbtn:not([disabled])::after,
+  .start__title-line,
+  .jackpot-layer__free {
+    animation: none !important;
+  }
+  #glamCanvas { display: none; }
+}

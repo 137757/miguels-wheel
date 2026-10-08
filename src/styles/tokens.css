@@ -1,0 +1,153 @@
+/* =========================================================================
+   Design tokens.
+
+   Every colour, size and duration in the app resolves through these custom
+   properties. Nothing hard-codes a hex value in a component stylesheet.
+   ========================================================================= */
+
+@font-face {
+  font-family: 'Bungee';
+  src: url('/assets/fonts/bungee-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Anton';
+  src: url('/assets/fonts/anton-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/assets/fonts/barlow-condensed-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/assets/fonts/barlow-condensed-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/assets/fonts/barlow-condensed-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/assets/fonts/barlow-condensed-800.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: block;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/assets/fonts/barlow-condensed-900.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+:root {
+  /* --- palette (from eventConfig.colours) --- */
+  --ink: #0a0909;
+  --ink-2: #141110;
+  --ink-3: #1e1a18;
+  --red: #e32620;
+  --red-hot: #ff4a3f;
+  --red-deep: #a51a16;
+  --cream: #f2e4c4;
+  --cream-bright: #fff8e8;
+  --gold: #f6c344;
+  --gold-bright: #ffe08a;
+  --gold-deep: #b67c10;
+  --pink: #ff4f7b;
+  --white: #ffffff;
+
+  /* --- semantic --- */
+  --bg: var(--ink);
+  --fg: var(--cream);
+  --muted: #9b8f7c;
+  --line: rgba(242, 228, 196, 0.16);
+  --ok: #4ec27a;
+  --warn: #f6c344;
+  --bad: #ff5a4e;
+
+  /* --- type --- */
+  --font-display: 'Bungee', 'Impact', sans-serif;
+  --font-impact: 'Anton', 'Haettenschweiler', sans-serif;
+  --font-ui: 'Barlow Condensed', 'Arial Narrow', system-ui, sans-serif;
+
+  --step-xs: clamp(0.7rem, 0.62rem + 0.22vw, 0.86rem);
+  --step-sm: clamp(0.86rem, 0.76rem + 0.3vw, 1.05rem);
+  --step-base: clamp(1rem, 0.9rem + 0.35vw, 1.22rem);
+  --step-lg: clamp(1.3rem, 1.1rem + 0.7vw, 1.8rem);
+  --step-xl: clamp(1.9rem, 1.5rem + 1.4vw, 3rem);
+  --step-2xl: clamp(2.6rem, 1.8rem + 2.8vw, 4.6rem);
+  --step-3xl: clamp(3.4rem, 2rem + 5vw, 7.5rem);
+
+  /* --- space --- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+
+  --radius: 14px;
+  --radius-lg: 26px;
+
+  /* --- motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
+  --dur-slow: 520ms;
+
+  /* --- texture opacity ceiling: atmosphere, never a veil --- */
+  --tex-max: 0.14;
+}
+
+/* Respect the OS setting globally; individual components add their own fallbacks. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur: 1ms;
+    --dur-slow: 1ms;
+  }
+}
+
+/*
+ * Performance guard for low-end hardware.
+ *
+ * Rather than guess at the target machine, we watch the real frame rate and
+ * strip the decorative layers if the display cannot keep up. The wheel, the
+ * prize reveal and all the sound keep working — only atmosphere is shed.
+ * Enabled from main.ts once real frames have been measured.
+ */
+body.perf-lite .tex--ink,
+body.perf-lite .tex--grunge,
+body.perf-lite .wheel-rays,
+body.perf-lite .petals,
+body.perf-lite .mascot__glint {
+  display: none;
+}
+
+body.perf-lite .lantern-glow {
+  animation: none;
+  opacity: 0.85;
+}
+
+body.perf-lite .wheel {
+  filter: none;
+}

@@ -1,0 +1,607 @@
+/* =========================================================================
+   Start screen, preflight, staff panel.
+   Staff surfaces are deliberately utilitarian and never touch the public frame.
+   ========================================================================= */
+
+/* ================================================================ START === */
+
+/* The start screen is the first thing anyone sees, and it measured as 82% of
+   the frame sitting on one shade of near-black — a title, a mark and a button
+   adrift in a void. Lifting the whole field was never an option: the copy is
+   stacked dead centre and the red "FRIED CHICKEN" line is already the one
+   thing on the page that cannot afford a warmer ground (red on red is the
+   exact failure the 50% OFF screen documents).
+
+   So the light is inverted. The centre stays as dark as it was — that is the
+   copy's ground and it is not negotiable — while the surround opens up into
+   warm stall light with the wheel's ray pattern caught in it. The frame gains
+   a room, the title gains an edge to sit against, and the button stops
+   floating. */
+.screen--start {
+  place-items: center;
+  background:
+    /* rays, held out at the edges by the inner shadow below */
+    conic-gradient(from 12deg at 50% 46%,
+      rgba(255, 178, 110, 0.11) 0deg, transparent 9deg,
+      rgba(255, 178, 110, 0.11) 19deg, transparent 28deg,
+      rgba(255, 140, 96, 0.09) 64deg, transparent 74deg,
+      rgba(255, 178, 110, 0.1) 128deg, transparent 138deg),
+    radial-gradient(120% 96% at 50% 46%,
+      rgba(8, 6, 5, 0.95) 0%,
+      rgba(10, 7, 6, 0.88) 32%,
+      rgba(58, 28, 12, 0.66) 60%,
+      rgba(96, 46, 20, 0.5) 82%,
+      rgba(52, 24, 12, 0.62) 100%),
+    rgba(8, 6, 5, 0.7);
+  z-index: 80;
+}
+
+.start__inner {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.5rem, 1.6vh, 1.4rem);
+  text-align: center;
+  max-width: 62rem;
+  padding: clamp(1.6rem, 4vh, 3rem) var(--s-4);
+}
+/* A soft dark pad behind the copy. The screen field is now warm and open at
+   the edges, which is right for the frame and wrong for the words — this is
+   what keeps the cream title at full contrast without flattening the whole
+   screen back to black. */
+.start__inner::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0 clamp(-3rem, -6vw, -1rem);
+  pointer-events: none;
+  background: radial-gradient(72% 78% at 50% 46%, rgba(6, 5, 5, 0.92) 0%, rgba(6, 5, 5, 0.66) 58%, rgba(6, 5, 5, 0) 100%);
+}
+
+.start__kicker {
+  font-size: var(--step-sm);
+  font-weight: 800;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--gold);
+  position: relative;
+}
+.start__kicker::before,
+.start__kicker::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: clamp(1.2rem, 4vw, 3.4rem);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.start__kicker::before {
+  right: calc(100% + 0.7rem);
+}
+.start__kicker::after {
+  left: calc(100% + 0.7rem);
+  rotate: 180deg;
+}
+
+.start__title {
+  display: grid;
+  gap: 0.06em;
+  line-height: 0.86;
+}
+.start__title-line {
+  font-size: clamp(2.4rem, 8.5vw, 7.4rem);
+  color: var(--cream-bright);
+  text-shadow: 0 10px 0 rgba(0, 0, 0, 0.42), 0 0 60px rgba(0, 0, 0, 0.6);
+}
+.start__title-line--red {
+  color: var(--red);
+  text-shadow: 0 10px 0 rgba(0, 0, 0, 0.45), 0 0 34px rgba(227, 38, 32, 0.5);
+}
+
+.start__wheel-mark {
+  width: clamp(150px, 22vh, 250px);
+  aspect-ratio: 1;
+  margin: clamp(0.2rem, 1vh, 0.8rem) 0;
+}
+.start__wheel-mark svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 22px 44px rgba(0, 0, 0, 0.7));
+  animation: mark-drift 22s ease-in-out infinite alternate;
+}
+@keyframes mark-drift {
+  from {
+    rotate: -5deg;
+  }
+  to {
+    rotate: 5deg;
+  }
+}
+
+.start__blurb {
+  font-size: var(--step-lg);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--cream);
+  opacity: 0.92;
+  max-width: 40ch;
+}
+.start__blurb strong {
+  color: var(--gold);
+  font-weight: 800;
+}
+
+.btn-start {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.1em;
+  margin-top: clamp(0.3rem, 1.2vh, 1rem);
+  padding: clamp(0.8rem, 2vh, 1.3rem) clamp(2.2rem, 6vw, 5rem);
+  border-radius: 999px;
+  background: radial-gradient(120% 160% at 50% -25%, #ff6a5e, var(--red) 46%, var(--red-deep));
+  box-shadow:
+    0 0 0 5px rgba(10, 9, 9, 0.85),
+    0 0 0 8px rgba(242, 228, 196, 0.18),
+    0 26px 60px -20px rgba(227, 38, 32, 0.95),
+    inset 0 -10px 24px -10px rgba(0, 0, 0, 0.6),
+    inset 0 8px 18px -6px rgba(255, 255, 255, 0.34);
+  color: var(--cream-bright);
+  animation: start-breathe 3.1s ease-in-out infinite;
+}
+.btn-start:hover {
+  filter: brightness(1.08);
+}
+.btn-start__label {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.6vw, 2.1rem);
+  letter-spacing: 0.1em;
+}
+.btn-start__sub {
+  font-size: var(--step-xs);
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  opacity: 0.72;
+}
+@keyframes start-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 5px rgba(10, 9, 9, 0.85),
+      0 0 0 8px rgba(242, 228, 196, 0.18),
+      0 26px 60px -20px rgba(227, 38, 32, 0.9),
+      0 0 40px -4px rgba(227, 38, 32, 0.45),
+      inset 0 -10px 24px -10px rgba(0, 0, 0, 0.6),
+      inset 0 8px 18px -6px rgba(255, 255, 255, 0.34);
+  }
+  50% {
+    box-shadow:
+      0 0 0 5px rgba(10, 9, 9, 0.85),
+      0 0 0 8px rgba(242, 228, 196, 0.3),
+      0 26px 70px -20px rgba(227, 38, 32, 1),
+      0 0 80px 4px rgba(227, 38, 32, 0.68),
+      inset 0 -10px 24px -10px rgba(0, 0, 0, 0.6),
+      inset 0 8px 18px -6px rgba(255, 255, 255, 0.34);
+  }
+}
+
+.start__hint {
+  font-size: var(--step-xs);
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================= PREFLIGHT === */
+
+.screen--preflight {
+  place-items: center;
+  background:
+    radial-gradient(80% 60% at 50% 40%, rgba(74, 38, 15, 0.62) 0%, rgba(5, 4, 4, 0) 70%),
+    rgba(5, 4, 4, 0.96);
+  z-index: 75;
+  padding: var(--s-5);
+  overflow: auto;
+}
+
+/* A card, not a list floating on black. Staff read this once before the doors
+   open and need to see at a glance that everything is ready; the flat version
+   gave the eye nothing to land on.
+
+   The first pass only drew a border on a near-black fill, which measured as
+   96% of the card sitting below luma 51 — a void with 1% text in it, i.e. the
+   same floating list wearing a frame. It is now an actual board: warm stock
+   lit from above, grain on the surface, and rows that read as objects against
+   it. The rows carry the status colour, so the card is scannable in one pass
+   from across the tent. */
+.preflight {
+  position: relative;
+  isolation: isolate;
+  width: min(1120px, 96vw);
+  display: grid;
+  gap: var(--s-5);
+  padding: clamp(1.4rem, 3.2vw, 2.6rem);
+  border: 1px solid rgba(246, 195, 68, 0.4);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(130% 60% at 50% -6%, rgba(255, 206, 138, 0.13) 0%, rgba(255, 206, 138, 0) 60%),
+    linear-gradient(180deg, #2c1e12 0%, #1d130c 58%, #130d09 100%);
+  box-shadow:
+    0 50px 120px -46px #000,
+    0 0 90px -30px rgba(255, 186, 100, 0.22),
+    inset 0 1px 0 rgba(255, 232, 190, 0.16);
+}
+/* Paper grain, so the board is a printed sign rather than a CSS rectangle. */
+.preflight::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image: url('/assets/textures/grunge_336.jpg');
+  background-size: 520px auto;
+  opacity: 0.2;
+  mix-blend-mode: overlay;
+}
+.preflight__head {
+  display: grid;
+  gap: var(--s-2);
+  padding-bottom: var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+.preflight__sub {
+  font-size: var(--step-base);
+  color: var(--cream);
+  opacity: 0.72;
+}
+
+.preflight__list {
+  display: grid;
+  gap: 3px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.check {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 1rem 1.2rem;
+  background: linear-gradient(90deg, rgba(242, 228, 196, 0.16) 0%, rgba(242, 228, 196, 0.04) 100%);
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, 0.07);
+  font-size: var(--step-base);
+  font-weight: 700;
+  color: var(--cream-bright);
+}
+.check--ok { border-left-color: var(--ok); }
+.check--warn { border-left-color: var(--warn); }
+.check--bad { border-left-color: var(--bad); }
+.check__box {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  line-height: 1;
+}
+.check--ok .check__box {
+  background: rgba(78, 194, 122, 0.18);
+  border-color: rgba(78, 194, 122, 0.6);
+  color: var(--ok);
+}
+.check--warn .check__box {
+  background: rgba(246, 195, 68, 0.16);
+  border-color: rgba(246, 195, 68, 0.6);
+  color: var(--warn);
+}
+.check--bad .check__box {
+  background: rgba(255, 90, 78, 0.16);
+  border-color: rgba(255, 90, 78, 0.6);
+  color: var(--bad);
+}
+.check__detail {
+  font-size: var(--step-sm);
+  color: var(--cream);
+  opacity: 0.7;
+  font-weight: 600;
+  text-align: right;
+  max-width: 34ch;
+}
+
+.preflight__actions {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* =========================================================== STAFF PANEL === */
+
+.staff {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  width: min(430px, 94vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(9, 8, 8, 0.975);
+  border-left: 2px solid rgba(246, 195, 68, 0.35);
+  box-shadow: -30px 0 80px -30px #000;
+  font-size: var(--step-sm);
+  animation: staff-in 280ms var(--ease-out);
+}
+@keyframes staff-in {
+  from {
+    transform: translateX(102%);
+  }
+}
+
+.staff__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(246, 195, 68, 0.1), transparent);
+}
+.staff__title {
+  font-family: var(--font-display);
+  font-size: var(--step-lg);
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+.staff__close {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.9rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.3rem;
+}
+.staff__close:hover {
+  color: var(--cream);
+}
+
+.staff__grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.9rem;
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+}
+
+/* Utilitarian, not decorative — but the panels still have to be objects. They
+   were #100d0c on a #090808 drawer, a two-value difference the eye cannot
+   resolve, so the whole panel measured as 88% flat black with the controls
+   floating in it. Lifted just enough to separate, kept neutral so this never
+   competes with the public frame. */
+.spanel {
+  border: 1px solid rgba(246, 195, 68, 0.16);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #1c1815 0%, #151211 100%);
+  box-shadow: inset 0 1px 0 rgba(242, 228, 196, 0.07);
+  padding: 0.75rem 0.85rem;
+  display: grid;
+  gap: 0.55rem;
+}
+.spanel__title {
+  font-size: var(--step-xs);
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.spanel__note {
+  font-size: var(--step-xs);
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.srow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-weight: 700;
+  padding: 0.12rem 0;
+}
+.srow__val {
+  font-family: var(--font-impact);
+  font-size: var(--step-base);
+  color: var(--cream);
+}
+.srow__val--big {
+  font-size: var(--step-xl);
+  color: var(--gold);
+  line-height: 0.9;
+}
+.srow__val--warn {
+  color: var(--red-hot);
+}
+
+.pill {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  font-size: var(--step-xs);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  border: 1px solid var(--line);
+}
+.pill--live {
+  background: rgba(78, 194, 122, 0.16);
+  border-color: rgba(78, 194, 122, 0.55);
+  color: #9ce4b8;
+}
+.pill--test {
+  background: rgba(246, 195, 68, 0.16);
+  border-color: rgba(246, 195, 68, 0.55);
+  color: var(--gold);
+}
+
+.sbtns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.staff__btn {
+  padding: 0.55rem 0.6rem;
+  border: 2px solid var(--line);
+  border-radius: 9px;
+  font-size: var(--step-xs);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(242, 228, 196, 0.09);
+}
+.staff__btn:hover:not(:disabled) {
+  background: rgba(242, 228, 196, 0.18);
+}
+.staff__btn:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+.staff__btn--primary {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--cream-bright);
+  grid-column: 1 / -1;
+}
+.staff__btn--wide {
+  grid-column: 1 / -1;
+}
+
+.sinv {
+  display: grid;
+  gap: 0.3rem;
+}
+.sinv__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sinv__label {
+  font-weight: 700;
+  color: var(--cream);
+}
+.sinv__bar {
+  width: 74px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(242, 228, 196, 0.14);
+  overflow: hidden;
+}
+.sinv__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+  transition: width var(--dur) var(--ease-out);
+}
+.sinv__count {
+  font-family: var(--font-impact);
+  font-size: var(--step-base);
+  min-width: 2.2em;
+  text-align: right;
+}
+.sinv__count.is-out {
+  color: var(--red-hot);
+}
+.sinv__step {
+  border: 1px solid var(--line);
+  background: rgba(242, 228, 196, 0.1);
+  color: var(--cream);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+.sinv__step:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.sbreak {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 0.6rem;
+  font-weight: 700;
+}
+.sbreak__n {
+  font-family: var(--font-impact);
+  font-size: var(--step-base);
+  text-align: right;
+  color: var(--gold);
+}
+
+.sforce {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.3rem;
+}
+.sforce__btn {
+  padding: 0.4rem 0.4rem;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sforce__btn:hover:not(:disabled) {
+  color: var(--cream);
+  border-color: var(--gold);
+  background: rgba(246, 195, 68, 0.1);
+}
+.sforce__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.danger {
+  border-color: rgba(255, 90, 78, 0.4);
+}
+.danger__confirm {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.danger__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 90, 78, 0.4);
+  background: #0a0808;
+  color: var(--cream);
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.danger__input:focus {
+  outline: none;
+  border-color: var(--red-hot);
+}
+
+@media (max-width: 720px) {
+  .staff {
+    width: 100vw;
+  }
+}

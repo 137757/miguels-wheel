@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0A0909" />
+    <meta name="color-scheme" content="dark" />
+    <title>Miguel's Fried Chicken — Prize Wheel</title>
+    <meta
+      name="description"
+      content="Market Day prize wheel for Miguel's Fried Chicken. Every $15 combo gets a spin. Every spin wins."
+    />
+  </head>
+  <body>
+    <!-- Texture atmosphere. All four layers are real downloaded assets at low opacity. -->
+    <div class="tex tex--paper" aria-hidden="true"></div>
+    <div class="tex tex--paper-dark" aria-hidden="true"></div>
+    <div class="tex tex--ink" aria-hidden="true"></div>
+    <div class="tex tex--grunge" aria-hidden="true"></div>
+    <div class="lantern-glow" aria-hidden="true"></div>
+    <div class="glam-vignette" aria-hidden="true"></div>
+    <canvas id="glamCanvas" aria-hidden="true"></canvas>
+    <div class="petals" id="petals" aria-hidden="true"></div>
+
+    <div class="test-watermark" id="testWatermark" hidden>TEST MODE</div>
+
+    <!-- ===================================================== START / BOOT === -->
+    <section class="screen screen--start is-active" id="screenStart" aria-label="Start">
+      <div class="start__inner">
+        <p class="start__kicker" data-text="MARKET DAY INSTALLATION">MARKET DAY INSTALLATION</p>
+        <h1 class="start__title">
+          <span class="start__title-line start__title-line--brush">MIGUEL'S</span>
+          <span class="start__title-line start__title-line--brush start__title-line--red">FRIED CHICKEN</span>
+        </h1>
+        <div class="start__wheel-mark" id="startWheelMark" aria-hidden="true"></div>
+        <p class="start__blurb">
+          One <strong>$15 combo</strong> equals <strong>one spin</strong>.<br />
+          Every spin wins. The jackpot takes the whole combo off the price.
+        </p>
+        <button class="btn-start" id="btnStart" type="button">
+          <span class="btn-start__label">START EVENT</span>
+          <span class="btn-start__sub">sound · fullscreen · wake lock</span>
+        </button>
+        <p class="start__hint">
+          Staff: press <kbd>S</kbd> at any time for the staff panel · <kbd>G</kbd> for wheel settings.
+        </p>
+      </div>
+    </section>
+
+    <!-- ======================================================= PREFLIGHT === -->
+    <section class="screen screen--preflight" id="screenPreflight" aria-label="Preflight checks" hidden>
+      <div class="preflight">
+        <header class="preflight__head">
+          <h2 class="h-display">PREFLIGHT</h2>
+          <p class="preflight__sub">Run every check before the students arrive.</p>
+        </header>
+        <ul class="preflight__list" id="preflightList"></ul>
+        <div class="preflight__actions">
+          <button class="btn btn--ghost" id="btnPreflightTest" type="button">RUN TEST SPIN</button>
+          <button class="btn btn--go" id="btnEnterLive" type="button">ENTER LIVE MODE</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ STAGE === -->
+    <main class="stage" id="stage" hidden>
+      <!-- LEFT: brand + promo -->
+      <section class="brand" aria-label="Brand and promotion">
+        <div class="brand__mark">
+          <span class="brand__word brand__word--brush">MIGUEL'S</span>
+          <span class="brand__word brand__word--brush brand__word--red">FRIED CHICKEN</span>
+          <span class="brand__rule" aria-hidden="true"></span>
+          <span class="brand__sub">KOREAN FRIED CHICKEN · MARKET DAY</span>
+        </div>
+
+        <div class="combo" id="comboCard">
+          <p class="combo__eyebrow">THE COMBO</p>
+          <p class="combo__price"><span class="combo__dollar">$</span>15</p>
+          <ul class="combo__items">
+            <li>Fried Chicken</li>
+            <li>Seoul Fries</li>
+            <li>Seoul Sunset</li>
+            <li class="combo__item--spin">+ 1 Wheel Spin</li>
+          </ul>
+        </div>
+
+        <div class="promo" id="promo" aria-live="polite">
+          <span class="promo__text" id="promoText">EVERY COMBO GETS A SPIN</span>
+        </div>
+
+        <p class="cta" id="ctaText">EVERY SPIN WINS</p>
+
+        <div class="mascot" id="mascot" aria-hidden="true"></div>
+      </section>
+
+      <!-- RIGHT: the wheel -->
+      <section class="rig" aria-label="Prize wheel">
+        <div class="rig__frame">
+          <div class="wheel-mount" id="wheelMount">
+            <div class="wheel-scale" id="wheelScale">
+              <div class="wheel-rot" id="wheelRot">
+                <div class="marquee" id="marquee" aria-hidden="true"></div>
+                <svg
+                  class="wheel"
+                  id="wheelSvg"
+                  viewBox="-560 -560 1120 1120"
+                  role="img"
+                  aria-label="Prize wheel"
+                >
+                  <defs>
+                    <filter id="wheelGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="14" result="b" />
+                      <feMerge>
+                        <feMergeNode in="b" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="9" />
+                    </filter>
+                    <radialGradient id="goldSweep" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" stop-color="#FFF3C4" stop-opacity="0.9" />
+                      <stop offset="55%" stop-color="#F6C344" stop-opacity="0.22" />
+                      <stop offset="100%" stop-color="#F6C344" stop-opacity="0" />
+                    </radialGradient>
+                    <radialGradient id="hubFace" cx="42%" cy="34%" r="72%">
+                      <stop offset="0%" stop-color="#2A2521" />
+                      <stop offset="100%" stop-color="#0A0909" />
+                    </radialGradient>
+                    <linearGradient id="jackpotSheen" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#FFF0B8" stop-opacity="0.55" />
+                      <stop offset="45%" stop-color="#F6C344" stop-opacity="0" />
+                      <stop offset="100%" stop-color="#FFF0B8" stop-opacity="0.4" />
+                    </linearGradient>
+                  </defs>
+                  <g id="wheelSectors"></g>
+                  <g id="wheelSheen"></g>
+                  <g id="wheelHub"></g>
+                </svg>
+                <div class="wheel-rays" id="wheelRays" aria-hidden="true"></div>
+              </div>
+            </div>
+            <div class="pointer" id="pointer" aria-hidden="true">
+              <svg viewBox="0 0 120 150" class="pointer__svg">
+                <defs>
+                  <linearGradient id="pointerGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#FFF6DA" />
+                    <stop offset="35%" stop-color="#F6C344" />
+                    <stop offset="100%" stop-color="#B67C10" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M60 148 L8 34 Q4 20 20 14 L60 2 L100 14 Q116 20 112 34 Z"
+                  fill="url(#pointerGrad)"
+                  stroke="#0A0909"
+                  stroke-width="5"
+                />
+                <circle cx="60" cy="40" r="11" fill="#E32620" stroke="#0A0909" stroke-width="5" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="spinbar">
+            <div class="turncue" id="turnCue" role="status" aria-live="polite" hidden>
+              <span class="turncue__line">YOUR TURN</span>
+              <span class="turncue__sub">HIT SPIN</span>
+            </div>
+            <button class="spinbtn" id="spinBtn" type="button" disabled>
+              <span class="spinbtn__ring" aria-hidden="true"></span>
+              <span class="spinbtn__label">SPIN</span>
+              <span class="spinbtn__sub">press SPACE</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========================================================== REVEAL === -->
+    <div class="reveal" id="reveal" hidden aria-live="assertive">
+      <div class="reveal__scrim" id="revealScrim" aria-hidden="true"></div>
+      <div class="reveal__stage" id="revealStage"></div>
+    </div>
+
+    <!-- ==================================================== MYSTERY BOX === -->
+    <div class="mystery" id="mystery" hidden aria-live="assertive">
+      <div class="mystery__spot" aria-hidden="true"></div>
+      <div class="mystery__box" id="mysteryBox" aria-hidden="true">
+        <svg viewBox="0 0 360 300" class="mystery__svg">
+          <g class="mb-body">
+            <path d="M40 120 L320 120 L300 280 L60 280 Z" fill="#E32620" stroke="#0A0909" stroke-width="7" />
+            <path d="M40 120 L320 120 L312 168 L48 168 Z" fill="#F2E4C4" />
+            <path d="M150 118 L210 118 L204 282 L156 282 Z" fill="#F2E4C4" stroke="#0A0909" stroke-width="4" />
+          </g>
+          <g class="mb-lid">
+            <path d="M28 40 L332 40 L322 122 L38 122 Z" fill="#F2E4C4" stroke="#0A0909" stroke-width="7" />
+            <path d="M150 36 L210 36 L204 126 L156 126 Z" fill="#E32620" stroke="#0A0909" stroke-width="4" />
+            <text
+              x="180"
+              y="94"
+              text-anchor="middle"
+              class="mb-korean"
+              fill="#0A0909"
+              font-size="44"
+            >
+              Mistery
+            </text>
+          </g>
+          <g class="mb-burst" opacity="0">
+            <path d="M180 40 L214 -70 L246 40 Z" fill="#F6C344" />
+            <path d="M180 40 L300 8 L318 74 Z" fill="#F6C344" />
+            <path d="M180 40 L60 8 L42 74 Z" fill="#F6C344" />
+            <path d="M180 40 L146 -70 L214 -70 Z" fill="#FFF3C4" />
+          </g>
+        </svg>
+        <div class="mystery__label" id="mysteryLabel">MYSTERY BOX</div>
+      </div>
+    </div>
+
+    <!-- ===================================================== STAFF PANEL === -->
+    <aside class="staff" id="staffPanel" hidden aria-label="Staff panel">
+      <header class="staff__head">
+        <h2 class="staff__title">STAFF</h2>
+        <button class="staff__close" id="staffClose" type="button" aria-label="Close staff panel">×</button>
+      </header>
+
+      <div class="staff__grid" id="staffBody"></div>
+    </aside>
+
+    <!-- ===================================================== SETTINGS ====== -->
+    <div class="settings" id="settingsPanel" hidden aria-label="Wheel settings"></div>
+
+    <!-- ======================================================= TOASTS ===== -->
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <noscript>
+      <div class="noscript">This prize wheel needs JavaScript switched on.</div>
+    </noscript>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
