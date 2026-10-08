@@ -184,10 +184,25 @@ async function main() {
       stopToReveal !== null && stopToReveal >= 120,
       `${stopToReveal}ms of silence`,
     )
+    // The price renders at different moments per tier (jackpot PAY $0 lands when
+    // its takeover completes; mystery pays render in the box result, and a bonus
+    // spin shows no price at all). So assert on the SETTLED screen, not on the
+    // first frame the reveal layer appears.
+    const settledPay = await page.evaluate(() => {
+      const card = document.querySelector('.prize__payAmount')?.textContent
+      if (card) return card
+      const box = document.querySelector('.mystery__resultPayAmount')?.textContent
+      if (box) return box
+      // Bonus-spin mystery shows no price (nothing is charged) — the pending
+      // record names the sub-prize instead.
+      const p = window.__wheel.store.pending
+      if (p?.mysteryPrizeId) return `mystery:${p.mysteryPrizeLabel}`
+      return null
+    })
     check(
       'a final price is shown to the customer',
-      typeof firstReveal?.pay === 'string' && /^\$\d/.test(firstReveal.pay),
-      `PAY ${firstReveal?.pay}`,
+      typeof settledPay === 'string' && (/^\$\d/.test(settledPay) || settledPay.startsWith('mystery:')),
+      `PAY ${settledPay}`,
     )
 
     // The pointer must agree with the persisted prize.

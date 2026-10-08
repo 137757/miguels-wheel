@@ -142,22 +142,24 @@ export class WheelView {
     }
     g.appendChild(mk('circle', { cx: 0, cy: 0, r: HUB_R + 16, fill: 'none', stroke: colours.gold, 'stroke-width': 3, opacity: 0.5 }))
     g.appendChild(mk('circle', { cx: 0, cy: 0, r: HUB_R, fill: 'url(#hubFace)', stroke: colours.cream, 'stroke-width': 4 }))
-    g.appendChild(mk('circle', { cx: 0, cy: 0, r: HUB_R - 12, fill: 'none', stroke: colours.red, 'stroke-width': 2, opacity: 0.75, 'stroke-dasharray': '5 9' }))
+    g.appendChild(mk('circle', { cx: 0, cy: 0, r: HUB_R - 8, fill: 'none', stroke: colours.gold, 'stroke-width': 1.5, opacity: 0.55 }))
+    g.appendChild(mk('circle', { cx: 0, cy: 0, r: HUB_R - 14, fill: 'none', stroke: colours.red, 'stroke-width': 2, opacity: 0.75, 'stroke-dasharray': '5 9' }))
 
     const g2 = mk('g', { transform: 'translate(0,0) rotate(-90)' })
-    g2.appendChild(mk('circle', { cx: 0, cy: 0, r: 58, fill: colours.red, opacity: 0.95 }))
-    g2.appendChild(mk('circle', { cx: 0, cy: 0, r: 58, fill: 'none', stroke: colours.gold, 'stroke-width': 3 }))
+    g2.appendChild(mk('circle', { cx: 0, cy: 0, r: 62, fill: colours.red, opacity: 0.95 }))
+    g2.appendChild(mk('circle', { cx: 0, cy: 0, r: 62, fill: 'none', stroke: colours.gold, 'stroke-width': 3.5 }))
+    g2.appendChild(mk('circle', { cx: 0, cy: 0, r: 54, fill: 'none', stroke: colours.cream, 'stroke-width': 1, opacity: 0.5 }))
     // A real <text> node rather than a foreignObject: an HTML subtree inside the
     // rotating wheel would force a full layout pass every frame.
     const hubText = mk('text', {
       x: 0,
-      y: 0,
+      y: 1,
       'text-anchor': 'middle',
       'dominant-baseline': 'central',
       fill: colours.cream,
       'font-family': 'Bungee, Impact, sans-serif',
-      'font-size': 26,
-      'letter-spacing': 1,
+      'font-size': 33,
+      'letter-spacing': 2,
     })
     hubText.textContent = 'SPIN'
     g2.appendChild(hubText)
@@ -166,7 +168,7 @@ export class WheelView {
     // Bolts around the hub for mechanical weight.
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * 360
-      const p = polarToCartesian(HUB_R - 26, a)
+      const p = polarToCartesian(HUB_R - 27, a)
       g.appendChild(mk('circle', { cx: Number(p.x.toFixed(1)), cy: Number(p.y.toFixed(1)), r: 3.4, fill: colours.gold, opacity: 0.7 }))
     }
   }
