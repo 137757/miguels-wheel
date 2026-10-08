@@ -3,3 +3,6 @@ dist/
 .preview/
 .DS_Store
 *.log
+screenshots/
+.asset-report/
+.preview/
