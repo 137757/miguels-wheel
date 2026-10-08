@@ -30,11 +30,16 @@ export class GlamField {
   #burstQueue: Array<{ x: number; y: number; n: number; spread: number }> = []
   #w = 0
   #h = 0
+  #lastFrame = 0
+  /** Pre-rendered glow dots — drawImage is an order of magnitude cheaper than
+   * arc()+shadowBlur per particle per frame (shadowBlur was the top cost). */
+  #sprites: HTMLCanvasElement[] = []
 
-  constructor(canvas: HTMLCanvasElement, reduced: boolean, count = 70) {
+  constructor(canvas: HTMLCanvasElement, reduced: boolean, count = 44) {
     this.#canvas = canvas
     this.#reduced = reduced
     this.#ctx = canvas.getContext('2d')
+    this.#sprites = [this.#makeSprite('#FFE08A'), this.#makeSprite('#F6C344'), this.#makeSprite('#FFF6DA')]
     this.#resize()
     window.addEventListener('resize', () => this.#resize())
     this.#seed(count)
@@ -44,13 +49,28 @@ export class GlamField {
     this.#reduced = v
   }
 
+  #makeSprite(color: string): HTMLCanvasElement {
+    const c = document.createElement('canvas')
+    c.width = 32
+    c.height = 32
+    const g = c.getContext('2d')!
+    const grad = g.createRadialGradient(16, 16, 0, 16, 16, 16)
+    grad.addColorStop(0, '#FFFFFF')
+    grad.addColorStop(0.25, color)
+    grad.addColorStop(1, 'rgba(246,195,68,0)')
+    g.fillStyle = grad
+    g.fillRect(0, 0, 32, 32)
+    return c
+  }
+
   #resize(): void {
-    const dpr = Math.min(2, window.devicePixelRatio || 1)
-    this.#w = window.innerWidth
-    this.#h = window.innerHeight
-    this.#canvas.width = Math.floor(this.#w * dpr)
-    this.#canvas.height = Math.floor(this.#h * dpr)
-    this.#ctx?.setTransform(dpr, 0, 0, dpr, 0, 0)
+    // Half resolution, CSS-scaled up: soft glow dots hide the upscale
+    // completely, while fill + texture-upload cost drops to a quarter.
+    // (DPR 1 fullscreen canvas uploads were a top frame cost.)
+    this.#w = Math.ceil(window.innerWidth / 2)
+    this.#h = Math.ceil(window.innerHeight / 2)
+    this.#canvas.width = this.#w
+    this.#canvas.height = this.#h
   }
 
   #seed(count: number): void {
@@ -112,6 +132,10 @@ export class GlamField {
   #tick(): void {
     const ctx = this.#ctx
     if (!ctx) return
+    // Cap at ~30fps: gold dust is ambient, nobody can see 60fps twinkle.
+    const now = performance.now()
+    if (now - this.#lastFrame < 33) return
+    this.#lastFrame = now
     ctx.clearRect(0, 0, this.#w, this.#h)
 
     // Spawn queued bursts as fast golden sparks.
@@ -143,14 +167,11 @@ export class GlamField {
         Object.assign(m, this.#mote())
       }
       const twinkle = 0.55 + 0.45 * Math.sin(m.tw)
-      ctx.beginPath()
-      ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2)
-      ctx.fillStyle = `hsla(${m.hue}, 95%, ${62 + twinkle * 14}%, ${m.alpha * twinkle})`
-      ctx.shadowColor = `hsla(${m.hue}, 100%, 60%, 0.8)`
-      ctx.shadowBlur = 8 * twinkle
-      ctx.fill()
-      ctx.shadowBlur = 0
+      const size = m.r * 4 * (0.7 + 0.3 * twinkle)
+      ctx.globalAlpha = m.alpha * twinkle
+      ctx.drawImage(this.#sprites[(m.hue | 0) % this.#sprites.length]!, m.x - size / 2, m.y - size / 2, size, size)
     }
+    ctx.globalAlpha = 1
   }
 }
 

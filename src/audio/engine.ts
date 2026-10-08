@@ -197,15 +197,11 @@ export class AudioEngine {
     osc.start(t)
     osc.stop(t + 0.06)
 
-    // Transient: band-passed noise for the wooden "tok".
-    const dur = 0.03
-    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate)
-    const data = buf.getChannelData(0)
-    for (let n = 0; n < data.length; n++) {
-      data[n] = (Math.random() * 2 - 1) * (1 - n / data.length) ** 2
-    }
+    // Transient: band-passed noise for the wooden "tok". The buffer is
+    // allocated ONCE and reused: at ~50 ticks/sec, allocating + filling a
+    // buffer per tick was pure GC pressure during every spin.
     const noise = ctx.createBufferSource()
-    noise.buffer = buf
+    noise.buffer = sharedNoiseBuffer(ctx)
     const bp = ctx.createBiquadFilter()
     bp.type = 'bandpass'
     bp.frequency.value = 2100 + (1 - i) * 1200
@@ -241,3 +237,23 @@ export class AudioEngine {
 }
 
 export const audio = new AudioEngine(import.meta.env?.BASE_URL ?? '')
+
+/**
+ * One shared 30ms decaying-noise buffer, created lazily per AudioContext.
+ * The pointer tick fires dozens of times per second during a spin; allocating
+ * and filling a fresh buffer per tick was pure GC pressure.
+ */
+const noiseCache = new WeakMap<BaseAudioContext, AudioBuffer>()
+
+function sharedNoiseBuffer(ctx: BaseAudioContext): AudioBuffer {
+  const hit = noiseCache.get(ctx)
+  if (hit) return hit
+  const dur = 0.03
+  const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate)
+  const data = buf.getChannelData(0)
+  for (let n = 0; n < data.length; n++) {
+    data[n] = (Math.random() * 2 - 1) * (1 - n / data.length) ** 2
+  }
+  noiseCache.set(ctx, buf)
+  return buf
+}

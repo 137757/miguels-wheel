@@ -109,15 +109,13 @@
   padding: clamp(0.9rem, 1.6vh, 1.3rem) clamp(1rem, 1.4vw, 1.4rem);
   background:
     linear-gradient(180deg, rgba(255, 214, 150, 0.09) 0%, rgba(255, 214, 150, 0) 34%),
-    linear-gradient(180deg, rgba(28, 20, 14, 0.92), rgba(12, 8, 7, 0.94));
+    linear-gradient(180deg, #1d140e, #0d0908);
   border: 1px solid rgba(246, 195, 68, 0.28);
   border-radius: 18px;
   box-shadow:
     0 24px 60px -28px #000,
     0 0 60px -30px rgba(246, 195, 68, 0.4),
     inset 0 1px 0 rgba(255, 232, 190, 0.14);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transition: opacity var(--dur) var(--ease-out);
 }
 
@@ -236,13 +234,25 @@
   will-change: transform;
 }
 
+/* The wheel shadow is a STATIC radial layer behind the wheel — never a
+   drop-shadow() filter on the rotating SVG, which would force a full
+   re-filter of ~900px of vectors on every animation frame. */
+.wheel-shadow {
+  position: absolute;
+  inset: 2%;
+  z-index: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.68) 0%, rgba(0, 0, 0, 0) 72%);
+  transform: translateY(3.5%);
+}
+
 .wheel {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
-  filter: drop-shadow(0 30px 70px rgba(0, 0, 0, 0.75));
 }
 
 /* --- marquee bulbs --- */
@@ -373,6 +383,8 @@
     0 0 0 5px rgba(10, 9, 9, 0.85),
     0 0 0 8px rgba(242, 228, 196, 0.08);
 }
+/* Brightness pulse, NOT box-shadow: re-rendering a 6-layer shadow every frame
+   cost more than the whole wheel. Small element, but it never rests. */
 .spinbtn:not([disabled]) {
   animation: spinbtn-breathe 2.6s ease-in-out infinite;
 }
@@ -386,22 +398,10 @@
 @keyframes spinbtn-breathe {
   0%,
   100% {
-    box-shadow:
-      0 0 0 5px rgba(10, 9, 9, 0.85),
-      0 0 0 8px rgba(242, 228, 196, 0.2),
-      0 22px 50px -18px rgba(227, 38, 32, 0.95),
-      0 0 44px -6px rgba(227, 38, 32, 0.5),
-      inset 0 -10px 26px -10px rgba(0, 0, 0, 0.6),
-      inset 0 8px 20px -6px rgba(255, 255, 255, 0.35);
+    filter: brightness(1);
   }
   50% {
-    box-shadow:
-      0 0 0 5px rgba(10, 9, 9, 0.85),
-      0 0 0 8px rgba(242, 228, 196, 0.32),
-      0 22px 60px -18px rgba(227, 38, 32, 1),
-      0 0 78px 2px rgba(227, 38, 32, 0.7),
-      inset 0 -10px 26px -10px rgba(0, 0, 0, 0.6),
-      inset 0 8px 20px -6px rgba(255, 255, 255, 0.35);
+    filter: brightness(1.14);
   }
 }
 

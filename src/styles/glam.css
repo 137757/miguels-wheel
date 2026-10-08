@@ -23,7 +23,9 @@
     linear-gradient(180deg, rgba(255, 214, 150, 0.05) 0%, rgba(0, 0, 0, 0) 22%);
 }
 
-/* Wheel halo: breathing gold aura behind the rig */
+/* Wheel halo: breathing gold aura behind the rig.
+   Opacity ONLY — scaling/rotating a giant blurred layer forces a full
+   re-raster every frame and was a top jank source. */
 .wheel-mount::before {
   content: '';
   position: absolute;
@@ -37,19 +39,19 @@
   animation: glam-halo 4.2s ease-in-out infinite;
 }
 @keyframes glam-halo {
-  0%, 100% { opacity: 0.65; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.04); }
+  0%, 100% { opacity: 0.65; }
+  50% { opacity: 1; }
 }
 
 /* Armed / spinning: wheel burns brighter */
-.stage[data-armed='1'] .wheel-mount::before { opacity: 1; filter: blur(4px) saturate(1.3); }
+.stage[data-armed='1'] .wheel-mount::before { opacity: 1; }
 .stage[data-armed='2'] .wheel-mount::before {
-  animation: glam-halo-spin 1.1s ease-in-out infinite;
+  animation: glam-halo-spin 1.6s ease-in-out infinite;
   background: radial-gradient(circle, rgba(255, 224, 138, 0.34) 0%, rgba(246, 195, 68, 0.16) 44%, rgba(0, 0, 0, 0) 70%);
 }
 @keyframes glam-halo-spin {
-  0%, 100% { opacity: 0.8; transform: scale(1.02) rotate(0deg); }
-  50% { opacity: 1; transform: scale(1.08) rotate(4deg); }
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
 }
 
 /* Rotating conic shimmer ring around the wheel */
@@ -122,42 +124,15 @@
 .glam-flash--rare { background: radial-gradient(65% 55% at 50% 45%, rgba(255, 106, 92, 0.95), rgba(227, 38, 32, 0.4) 60%, transparent 84%); }
 .glam-flash--jackpot { background: radial-gradient(75% 65% at 50% 42%, #fff3c4 0%, rgba(255, 194, 31, 0.9) 34%, rgba(207, 122, 12, 0.5) 62%, transparent 85%); }
 
-/* Jackpot words: solid molten gold with deep offset + halo. (An animated
-   background-clip:text shimmer was tried here and rendered near-black in some
-   Chromium builds when combined with drop-shadow filters — solid wins.) */
+/* Jackpot words: solid molten gold with deep offset + halo. Static — the
+   confetti storm behind it is all the motion this moment needs, and a filter
+   pulse here would repaint huge text every frame for as long as it shows. */
 .jackpot-layer__free {
   color: #ffc21f;
   text-shadow:
     0 10px 0 rgba(48, 20, 0, 0.8),
     0 0 60px rgba(255, 190, 60, 0.95),
     0 0 130px rgba(255, 150, 20, 0.8);
-  animation: glam-freepulse 2.4s ease-in-out infinite;
-}
-@keyframes glam-freepulse {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.18); }
-}
-
-/* Gentle brightness shimmer (transform/filter only — always paints). */
-@keyframes glam-goldflow {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.12); }
-}
-
-/* Start screen title shimmer */
-.start__title-line {
-  background: linear-gradient(100deg, var(--cream-bright) 30%, #fff 45%, var(--cream-bright) 60%);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: glam-goldflow 7s ease-in-out infinite;
-}
-.start__title-line--red {
-  background: linear-gradient(100deg, var(--red) 25%, #ff7a6e 45%, var(--red) 65%);
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: glam-goldflow 5.5s ease-in-out infinite;
 }
 
 /* Perf + reduced-motion: keep glow, drop animation */

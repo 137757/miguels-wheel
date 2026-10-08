@@ -140,6 +140,18 @@ body.perf-lite .tex--grunge {
   display: none;
 }
 
+/* Shed every remaining infinite loop — the wheel, spins and reveals keep
+   working; only decoration stops. */
+body.perf-lite .wheel-mount::before,
+body.perf-lite .wheel-mount::after,
+body.perf-lite .spinbtn:not([disabled]),
+body.perf-lite .btn-start,
+body.perf-lite .spinbtn__ring,
+body.perf-lite .lantern-glow,
+body.perf-lite .turncue {
+  animation: none !important;
+}
+
 body.perf-lite .lantern-glow {
   animation: none;
   opacity: 0.85;

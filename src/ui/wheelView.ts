@@ -93,20 +93,31 @@ export class WheelView {
     this.#chasePeriod = 3.6 / Math.max(0.2, speed)
     this.#chaseT = 0
     cancelAnimationFrame(this.#chaseRaf)
+    let lastHead = -1
+    let lastPaint = 0
     const loop = (now: number) => {
       if (!this.#chaseStart) this.#chaseStart = now
+      // 20fps is plenty for a decorative chase and cuts style recalc by 3×.
+      if (now - lastPaint < 50) {
+        this.#chaseRaf = requestAnimationFrame(loop)
+        return
+      }
+      lastPaint = now
       const dt = (now - this.#chaseStart) / 1000
       this.#chaseT = (dt / this.#chasePeriod) * this.#bulbs.length
       const head = Math.floor(this.#chaseT) % this.#bulbs.length
-      for (let i = 0; i < this.#bulbs.length; i++) {
-        const d = (i - head + this.#bulbs.length) % this.#bulbs.length
-        const el = this.#bulbs[i]!
-        if (d < 3) {
-          el.className = `bulb ${d === 0 ? 'is-hot' : 'is-red'}`
-        } else if (d < 10) {
-          el.className = 'bulb is-dim'
-        } else {
-          el.className = 'bulb'
+      if (head !== lastHead) {
+        lastHead = head
+        for (let i = 0; i < this.#bulbs.length; i++) {
+          const d = (i - head + this.#bulbs.length) % this.#bulbs.length
+          const el = this.#bulbs[i]!
+          if (d < 3) {
+            el.className = `bulb ${d === 0 ? 'is-hot' : 'is-red'}`
+          } else if (d < 10) {
+            el.className = 'bulb is-dim'
+          } else {
+            el.className = 'bulb'
+          }
         }
       }
       this.#chaseRaf = requestAnimationFrame(loop)
@@ -191,14 +202,6 @@ export class WheelView {
         sheen.setAttribute('fill', 'url(#jackpotSheen)')
         g.appendChild(sheen)
       }
-
-      // Grain on the wedge face.
-      const grain = document.createElementNS(ns, 'path')
-      grain.setAttribute('d', sectorPath(R_OUTER, R_INNER, s.start, s.end))
-      grain.setAttribute('fill', colours.ink)
-      attr(grain, 'opacity', 0.07)
-      grain.setAttribute('style', 'mix-blend-mode:multiply;pointer-events:none')
-      g.appendChild(grain)
 
       this.#renderLabel(g, s, isJackpot ? colours.ink : pal.text)
     }
