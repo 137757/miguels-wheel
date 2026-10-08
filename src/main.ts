@@ -230,16 +230,25 @@ function paintPublicState(): void {
   dom.stage.dataset.armed = stageArmLevel()
 
   const canSpin = machine.canSpin
-  dom.spinBtn.disabled = !canSpin || spinning
+  // Self-serve: in IDLE the button is live and the first tap arms (it never
+  // spins on the first tap — a stray touch can never mint a prize). Only ARMED
+  // and BONUS_ARMED actually start the wheel.
+  const spinReady = st === 'IDLE' || canSpin
+  dom.spinBtn.disabled = !spinReady || spinning
   dom.spinBtn.classList.toggle('is-retracting', st === 'SPINNING')
 
-  const showCue = st === 'ARMED' || st === 'BONUS_ARMED'
+  const showCue = st === 'IDLE' || st === 'ARMED' || st === 'BONUS_ARMED'
   dom.turnCue.hidden = !showCue
   if (showCue) {
     const line = dom.turnCue.querySelector('.turncue__line')!
     const sub = dom.turnCue.querySelector('.turncue__sub')!
-    line.textContent = st === 'BONUS_ARMED' ? 'BONUS SPIN' : 'YOUR TURN'
-    sub.textContent = st === 'BONUS_ARMED' ? 'ON THE HOUSE' : 'HIT SPIN'
+    if (st === 'IDLE') {
+      line.textContent = 'READY'
+      sub.textContent = 'TAP SPIN TO ARM'
+    } else {
+      line.textContent = st === 'BONUS_ARMED' ? 'BONUS SPIN' : 'YOUR TURN'
+      sub.textContent = st === 'BONUS_ARMED' ? 'ON THE HOUSE' : 'HIT SPIN'
+    }
   }
 
   const isTest = store.settings.mode === 'TEST'
@@ -902,7 +911,13 @@ function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 dom.spinBtn.addEventListener('click', () => {
-  if (machine.canSpin && !spinning) void beginSpin()
+  if (spinning) return
+  // First tap from IDLE arms (never spins); a tap while armed spins.
+  if (machine.state === 'IDLE') {
+    armSpin()
+    return
+  }
+  if (machine.canSpin) void beginSpin()
 })
 
 dom.btnStart.addEventListener('click', () => void startEvent())
@@ -931,7 +946,13 @@ window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase()
 
   if (k === ' ' || e.key === 'Enter') {
-    if (machine.canSpin && !spinning) {
+    if (spinning) return
+    if (machine.state === 'IDLE') {
+      e.preventDefault()
+      armSpin()
+      return
+    }
+    if (machine.canSpin) {
       e.preventDefault()
       void beginSpin()
     }
@@ -965,35 +986,51 @@ window.addEventListener('pointerdown', () => {
 /* ------------------------------------------------------------------ startup --- */
 
 async function startEvent(): Promise<void> {
+  // A double-tap on START must not run the boot sequence twice.
+  if (machine.state !== 'START') return
+  // Instant feedback first: the start screen goes away on THIS frame. Sounds
+  // decode in the background (21 files took ~8s even on fast wifi — blocking
+  // on them made the button look dead). Preflight shows live load progress.
+  dom.start.classList.remove('is-active')
+  dom.start.hidden = true
+
+  // Fullscreen synchronously, while the click gesture is still fresh.
   try {
-    await audio.init()
-  } catch (err) {
-    toast(`Audio failed to start: ${String(err)}`, 'bad')
-  }
-  await audio.loadAll()
-  audio.setMuted(store.settings.muted)
-  await acquireWakeLock()
-  // Fullscreen only ever as a direct result of this click.
-  try {
-    if (!isFullscreen()) await document.documentElement.requestFullscreen({ navigationUI: 'hide' })
+    if (!isFullscreen()) void document.documentElement.requestFullscreen({ navigationUI: 'hide' }).catch(() => {})
   } catch {
     /* the display will just stay windowed */
   }
-
-  dom.start.classList.remove('is-active')
-  dom.start.hidden = true
+  void acquireWakeLock()
 
   // If a prize was already drawn before the reload, recovery wins over preflight.
   if (store.pending) {
     dom.stage.hidden = false
     refreshWheel()
+    void bootAudio()
     await runRecovery(store.pending)
     return
   }
   openPreflight()
+  void bootAudio()
 }
 
-function openPreflight(): void {
+/** Init + decode sounds without blocking the UI. Preflight re-renders live. */
+async function bootAudio(): Promise<void> {
+  try {
+    await audio.init()
+  } catch (err) {
+    toast(`Audio failed to start: ${String(err)}`, 'bad')
+    renderPreflightInput()
+    return
+  }
+  audio.setMuted(store.settings.muted)
+  await audio.loadAll()
+  renderPreflightInput()
+  staff.render()
+}
+
+function renderPreflightInput(): void {
+  if (machine.state !== 'PREFLIGHT') return
   preflight.render({
     audioReady: audio.ready,
     audioLoaded: audio.loadedCount,
@@ -1005,8 +1042,21 @@ function openPreflight(): void {
     prizes: store.getPrizes(),
     mystery: store.getMysteryPrizes(),
   })
+}
+
+function openPreflight(): void {
   machine.restore('PREFLIGHT')
   staff.render()
+  renderPreflightInput()
+  // Live progress while sounds decode in the background. Stops the moment we
+  // leave preflight (or the moment everything is decoded).
+  const timer = setInterval(() => {
+    if (machine.state !== 'PREFLIGHT' || audio.allLoaded) {
+      clearInterval(timer)
+      return
+    }
+    renderPreflightInput()
+  }, 500)
 }
 
 function enterLive(): void {
@@ -1112,9 +1162,12 @@ function boot(): void {
   }
 
   // Warm the textures before the first paint so nothing pops in later.
+  // Relative to BASE_URL: an absolute `/assets/...` path breaks under a subpath
+  // deploy (e.g. username.github.io/miguels-wheel/) with silent 404s.
+  const assetBase = import.meta.env?.BASE_URL ?? './'
   for (const src of [textures.paper, textures.paperDark, textures.inkPaint, textures.grunge]) {
     const img = new Image()
-    img.src = `/${src.replace(/^\//, '')}`
+    img.src = `${assetBase}${src.replace(/^\//, '')}`
   }
 
   machine.subscribe(() => paintPublicState())

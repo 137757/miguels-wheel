@@ -416,16 +416,33 @@ async function main() {
     check('A arms a spin', states.a === 'ARMED', `state ${states.a}`)
     check('M and F do not change the armed state', states.m === 'ARMED' && states.f === 'ARMED')
 
-    const spinDisabledCheck = await page.evaluate(() => {
+    // Self-serve: the first SPIN tap from IDLE arms but never spins (no prize
+    // minted, no stock consumed). The second tap spins.
+    const idleTap = await page.evaluate(async () => {
       window.__wheel.nextCustomer()
-      return new Promise((r) =>
-        setTimeout(() => r({ state: window.__wheel.machineState(), disabled: document.querySelector('#spinBtn').disabled }), 300),
-      )
+      await new Promise((r) => setTimeout(r, 300))
+      const before = {
+        state: window.__wheel.machineState(),
+        disabled: document.querySelector('#spinBtn').disabled,
+        pending: !!window.__wheel.store.pending,
+      }
+      document.querySelector('#spinBtn').click()
+      await new Promise((r) => setTimeout(r, 300))
+      return {
+        before,
+        state: window.__wheel.machineState(),
+        pending: !!window.__wheel.store.pending,
+      }
     })
     check(
-      'the SPIN button is inert while idle',
-      spinDisabledCheck.state === 'IDLE' && spinDisabledCheck.disabled === true,
-      JSON.stringify(spinDisabledCheck),
+      'the SPIN button is enabled while idle',
+      idleTap.before.state === 'IDLE' && idleTap.before.disabled === false,
+      JSON.stringify(idleTap.before),
+    )
+    check(
+      'the first SPIN tap from idle only arms (never spins)',
+      idleTap.state === 'ARMED' && idleTap.pending === false,
+      JSON.stringify({ state: idleTap.state, pending: idleTap.pending }),
     )
 
     console.log('\n── J console errors ──')

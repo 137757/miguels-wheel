@@ -10,7 +10,6 @@ import {
   inventory as inventoryConfig,
   mysteryPrizeDefinitions,
   type InventoryKeyName,
-  type PrizeDefinition,
 } from '../config/eventConfig.ts'
 import { download, stamp, summarise, toCsv, toJson } from '../core/eventLog.ts'
 import type { EventStore } from '../core/store.ts'
@@ -265,8 +264,4 @@ export class StaffPanel {
       if (e.key === 'Enter' && btn && !btn.disabled) this.#hooks.reset()
     })
   }
-}
-
-export function prizeById(id: string, list?: PrizeDefinition[]): PrizeDefinition | undefined {
-  return list?.find((p) => p.id === id)
 }
