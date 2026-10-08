@@ -47,6 +47,43 @@ function uid(): string {
   return `seg-${Date.now().toString(36)}-${Math.floor(Math.random() * 0xffff).toString(36)}`
 }
 
+/**
+ * Scale a weight list to whole-number percents totalling exactly 100.
+ *
+ * Largest-remainder rounding keeps the relative odds (ordering is preserved),
+ * every segment keeps at least 1%, and the save button stays enabled after
+ * add/delete instead of stranding staff on arithmetic.
+ */
+export function normalizeWeights<T extends { weight: number }>(list: T[]): T[] {
+  const total = list.reduce((a, p) => a + (Number(p.weight) || 0), 0)
+  if (list.length === 0 || total <= 0) return list
+  const scaled = list.map((p) => ((Number(p.weight) || 0) / total) * 100)
+  const floored = scaled.map((s) => Math.floor(s))
+  let remainder = 100 - floored.reduce((a, n) => a + n, 0)
+  const order = scaled
+    .map((s, i) => ({ i, frac: s - Math.floor(s) }))
+    .sort((a, b) => b.frac - a.frac)
+  for (const { i } of order) {
+    if (remainder <= 0) break
+    floored[i]! += 1
+    remainder -= 1
+  }
+  // Never strand a segment at 0%: steal from the largest.
+  for (let i = 0; i < floored.length; i++) {
+    if (floored[i]! < 1) {
+      const donor = floored.indexOf(Math.max(...floored))
+      if (floored[donor]! > 1) {
+        floored[donor]! -= 1
+        floored[i]! += 1
+      }
+    }
+  }
+  list.forEach((p, i) => {
+    p.weight = floored[i]!
+  })
+  return list
+}
+
 export class SettingsPanel {
   #root: HTMLElement
   #store: EventStore
@@ -112,6 +149,7 @@ export class SettingsPanel {
             <p class="settings__sub">
               Weights <strong>are</strong> percents — they must total <strong>100%</strong>.
               Every slice looks the same size; the <strong>Chance %</strong> below is the real odds.
+              Drag freely, then hit <strong>Auto-balance</strong>.
               ${custom ? `Custom layout saved${updated ? ` · ${new Date(updated).toLocaleString()}` : ''}.` : 'Using shipped defaults.'}
             </p>
           </div>
@@ -128,19 +166,20 @@ export class SettingsPanel {
           <span class="settings__totaltext">${this.#tab === 'main' ? mainSum : mysterySum}% / 100%</span>
         </div>
 
-        ${errors.length ? `<ul class="settings__errors">${errors.slice(0, 6).map((e) => `<li>✕ ${e.message}</li>`).join('')}${errors.length > 6 ? `<li>… +${errors.length - 6} more</li>` : ''}</ul>` : `<p class="settings__ok">✓ Valid — every segment lands exactly as often as its arc shows.</p>`}
+        ${errors.length ? `<ul class="settings__errors">${errors.slice(0, 6).map((e) => `<li>✕ ${e.message}</li>`).join('')}${errors.length > 6 ? `<li>… +${errors.length - 6} more</li>` : ''}</ul>` : `<p class="settings__ok">✓ Valid — every segment lands exactly as often as its % shows.</p>`}
 
         <div class="settings__list">${rows}</div>
 
         <footer class="settings__actions">
           <button class="btn btn--go" data-act="save" type="button" ${canSave ? '' : 'disabled'}>Save wheel</button>
           <button class="btn" data-act="add" type="button">+ Add segment</button>
+          <button class="btn" data-act="balance" type="button" ${this.#tabTotal() === 100 ? 'disabled' : ''}>Auto-balance to 100%</button>
           <button class="btn btn--ghost" data-act="reset" type="button">Reset to defaults</button>
           <button class="btn btn--ghost" data-act="export" type="button">Export</button>
           <button class="btn btn--ghost" data-act="import" type="button">Import</button>
           <input class="settings__file" data-file="import" type="file" accept="application/json" hidden />
         </footer>
-        <p class="settings__note">Tip: keep the jackpot the rarest slice. Changes apply instantly to the wheel behind this panel after Save. Rebuild is blocked while spinning.</p>
+        <p class="settings__note">Tip: keep the jackpot the rarest slice. Adding or removing a segment rebalances the rest so the total stays 100%. Changes apply instantly to the wheel behind this panel after Save. Rebuild is blocked while spinning.</p>
       </div>`
     this.#wire()
   }
@@ -270,6 +309,12 @@ export class SettingsPanel {
 
   /* ---------------------------------------------------------------- wiring --- */
 
+  /** Total of the currently visible tab — drives the Auto-balance button. */
+  #tabTotal(): number {
+    const list = this.#tab === 'main' ? this.#draft : this.#mysteryDraft
+    return list.reduce((a, p) => a + (Number(p.weight) || 0), 0)
+  }
+
   #wire(): void {
     const root = this.#root
 
@@ -303,15 +348,25 @@ export class SettingsPanel {
         if (this.#tab === 'main') {
           if (this.#draft.length <= 2) return
           this.#draft = this.#draft.filter((p) => p.id !== id)
+          normalizeWeights(this.#draft)
+          this.#hooks.notify('Segment removed — rest rebalanced to 100%', 'info')
         } else {
           if (this.#mysteryDraft.length <= 2) return
           this.#mysteryDraft = this.#mysteryDraft.filter((p) => p.id !== id)
+          normalizeWeights(this.#mysteryDraft)
+          this.#hooks.notify('Mystery prize removed — rest rebalanced to 100%', 'info')
         }
         this.render()
       })
     })
 
     root.querySelector('[data-act="add"]')?.addEventListener('click', () => this.#addSegment())
+    root.querySelector('[data-act="balance"]')?.addEventListener('click', () => {
+      if (this.#tab === 'main') normalizeWeights(this.#draft)
+      else normalizeWeights(this.#mysteryDraft)
+      this.#hooks.notify('Rebalanced to exactly 100% — relative odds kept', 'good')
+      this.render()
+    })
     root.querySelector('[data-act="save"]')?.addEventListener('click', () => this.#save())
     root.querySelector('[data-act="reset"]')?.addEventListener('click', () => this.#reset())
     root.querySelector('[data-act="export"]')?.addEventListener('click', () => this.#export())
@@ -418,10 +473,26 @@ export class SettingsPanel {
         pct.textContent = `≈ ${share.toFixed(1)}% ${suffix}`
       }
     })
-    // Re-validate save button state live.
+    // Re-validate everything live: save gate, auto-balance availability, and the
+    // error/ok banner — a stale banner next to a live total bar reads as broken.
     const issues = validatePrizeList(this.#draft, this.#mysteryDraft)
+    const errors = issues.filter((i) => i.level === 'error')
     const save = this.#root.querySelector<HTMLButtonElement>('[data-act="save"]')
-    if (save) save.disabled = issues.some((i) => i.level === 'error')
+    if (save) save.disabled = errors.length > 0
+    const balance = this.#root.querySelector<HTMLButtonElement>('[data-act="balance"]')
+    if (balance) balance.disabled = sum === 100
+    const oldBanner = this.#root.querySelector('.settings__errors, .settings__ok')
+    if (oldBanner) {
+      const fresh = document.createElement('div')
+      fresh.innerHTML =
+        errors.length > 0
+          ? `<ul class="settings__errors">${errors
+              .slice(0, 6)
+              .map((e) => `<li>✕ ${e.message}</li>`)
+              .join('')}${errors.length > 6 ? `<li>… +${errors.length - 6} more</li>` : ''}</ul>`
+          : `<p class="settings__ok">✓ Valid — every segment lands exactly as often as its % shows.</p>`
+      oldBanner.replaceWith(...Array.from(fresh.childNodes))
+    }
   }
 
   #addSegment(): void {
@@ -445,6 +516,8 @@ export class SettingsPanel {
         priceEffect: { kind: 'none' },
         sfx: 'win-pop',
       })
+      normalizeWeights(this.#draft)
+      this.#hooks.notify('Segment added — odds rebalanced to 100%', 'good')
     } else {
       if (this.#mysteryDraft.length >= 8) {
         this.#hooks.notify('Maximum 8 mystery prizes', 'bad')
@@ -461,6 +534,8 @@ export class SettingsPanel {
         priceEffect: { kind: 'none' },
         sfx: 'win-pop',
       })
+      normalizeWeights(this.#mysteryDraft)
+      this.#hooks.notify('Mystery prize added — odds rebalanced to 100%', 'good')
     }
     this.render()
   }

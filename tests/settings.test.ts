@@ -104,6 +104,63 @@ describe('settings — equal slices, weighted draws for custom wheels', () => {
   })
 })
 
+describe('settings — auto-rebalance', () => {
+  it('scales any list to exactly 100 whole-number weights', async () => {
+    const { normalizeWeights } = await import('../src/ui/settings.ts')
+    for (const weights of [[25, 20, 17, 14, 10, 6, 5, 3], [50, 30, 20], [1, 1, 1], [99, 1], [7]]) {
+      const list = weights.map((weight, i) => ({ id: `p${i}`, weight }))
+      normalizeWeights(list)
+      expect(list.reduce((a, p) => a + p.weight, 0)).toBe(100)
+      for (const p of list) {
+        expect(Number.isInteger(p.weight)).toBe(true)
+        expect(p.weight).toBeGreaterThanOrEqual(1)
+      }
+    }
+  })
+
+  it('preserves relative odds ordering', async () => {
+    const { normalizeWeights } = await import('../src/ui/settings.ts')
+    const list = [
+      { id: 'a', weight: 25 },
+      { id: 'b', weight: 20 },
+      { id: 'c', weight: 17 },
+      { id: 'd', weight: 14 },
+      { id: 'e', weight: 10 },
+      { id: 'f', weight: 6 },
+      { id: 'g', weight: 5 },
+      { id: 'h', weight: 3 },
+      { id: 'new', weight: 5 },
+    ]
+    normalizeWeights(list)
+    const ordered = [...list].sort((x, y) => y.weight - x.weight).map((p) => p.id)
+    expect(ordered[0]).toBe('a')
+    expect(ordered[ordered.length - 1]).toBe('h')
+    expect(list.reduce((a, p) => a + p.weight, 0)).toBe(100)
+  })
+
+  it('adding a segment then rebalancing keeps the jackpot rarest', () => {
+    const prizes = defaultPrizeList()
+    prizes.push({
+      id: 'custom-prize',
+      sectorLabel: 'CUSTOM',
+      label: 'Custom prize',
+      meaning: 'Custom',
+      tier: 'COMMON',
+      weight: 5,
+      icon: 'ticket',
+      fill: 'cream',
+      priceEffect: { kind: 'none' },
+      sfx: 'win-pop',
+    })
+    // Simulate the settings add flow (dynamic import avoids cycles).
+    return import('../src/ui/settings.ts').then(({ normalizeWeights }) => {
+      normalizeWeights(prizes)
+      const errors = validatePrizeList(prizes, defaultMysteryList()).filter((i) => i.level === 'error')
+      expect(errors).toEqual([])
+    })
+  })
+})
+
 describe('settings — persistence', () => {
   it('custom wheel survives a store reload', () => {
     const storage = new FakeStorage()
