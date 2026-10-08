@@ -202,6 +202,7 @@ kbd {
 .btn:focus-visible,
 .btn-start:focus-visible,
 .spinbtn:focus-visible,
+.flownext:focus-visible,
 .staff__btn:focus-visible,
 .staff__close:focus-visible,
 .sinv__step:focus-visible,
@@ -249,6 +250,50 @@ kbd {
 }
 
 /* ------------------------------------------------------------ test mark */
+
+/* Staff advance: the visible exit from every win screen. Bottom-right, quiet
+   but unmissable — no more stranded reveals. Lives above reveal/mystery. */
+.flownext {
+  position: fixed;
+  right: clamp(1rem, 2.5vw, 2.2rem);
+  bottom: clamp(1rem, 3vh, 2.2rem);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.85em 1.4em;
+  border-radius: 999px;
+  border: 2px solid rgba(246, 195, 68, 0.65);
+  background: rgba(10, 8, 7, 0.92);
+  box-shadow:
+    0 18px 44px -16px #000,
+    0 0 34px -8px rgba(246, 195, 68, 0.55),
+    inset 0 1px 0 rgba(255, 232, 190, 0.16);
+  color: var(--gold-bright);
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: var(--step-base);
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  animation: flownext-in 320ms var(--ease-snap);
+}
+.flownext:hover {
+  background: rgba(46, 30, 12, 0.96);
+  box-shadow:
+    0 18px 44px -16px #000,
+    0 0 54px -6px rgba(246, 195, 68, 0.75),
+    inset 0 1px 0 rgba(255, 232, 190, 0.2);
+}
+.flownext kbd {
+  border-color: rgba(246, 195, 68, 0.4);
+  color: var(--gold);
+}
+@keyframes flownext-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+}
 
 .test-watermark {
   position: fixed;

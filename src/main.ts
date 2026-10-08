@@ -123,6 +123,7 @@ const dom = {
   },
   staff: el('staffPanel'),
   staffBody: el('staffBody'),
+  flowNext: el<HTMLButtonElement>('flowNext'),
   staffClose: el<HTMLButtonElement>('staffClose'),
   settings: el('settingsPanel'),
   glamCanvas: el<HTMLCanvasElement>('glamCanvas'),
@@ -266,6 +267,9 @@ function paintPublicState(): void {
     dom.comboCard.style.opacity = ''
   }
   dom.oddsLine.textContent = `${renderedSectors.length || store.getPrizes().length} EQUAL SLICES · TRUE ODDS IN SETTINGS`
+
+  // The visible exit: only ever on the settled win screen, never mid-animation.
+  dom.flowNext.hidden = !(st === 'AWAITING_REDEMPTION' && !revealBusy && !spinning)
 
   staff.render()
 }
@@ -906,6 +910,7 @@ dom.btnStart.addEventListener('click', () => void startEvent())
 dom.preflight.testBtn.addEventListener('click', () => void runTestSpin())
 dom.preflight.liveBtn.addEventListener('click', () => enterLive())
 dom.staffClose.addEventListener('click', () => staff.close())
+dom.flowNext.addEventListener('click', () => nextCustomer())
 
 window.addEventListener('keydown', (e) => {
   // Escape always works, even from inside a text field: staff must never be
@@ -932,6 +937,12 @@ window.addEventListener('keydown', (e) => {
     if (machine.state === 'IDLE') {
       e.preventDefault()
       armSpin()
+      return
+    }
+    // Space/Enter on the settled win screen redeems and returns to the wheel.
+    if (machine.state === 'AWAITING_REDEMPTION' && !revealBusy) {
+      e.preventDefault()
+      nextCustomer()
       return
     }
     if (machine.canSpin) {

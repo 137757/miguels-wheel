@@ -19,6 +19,9 @@
    floating. */
 .screen--start {
   place-items: center;
+  /* Safety net: on a short display the content scrolls instead of clipping,
+     and margin:auto keeps it centred when it does fit. */
+  overflow-y: auto;
   background:
     /* rays, held out at the edges by the inner shadow below */
     conic-gradient(from 12deg at 50% 46%,
@@ -43,7 +46,45 @@
   gap: clamp(0.5rem, 1.6vh, 1.4rem);
   text-align: center;
   max-width: 62rem;
+  margin: auto;
   padding: clamp(1.6rem, 4vh, 3rem) var(--s-4);
+}
+
+/* Compact mode for short displays (small laptops, 720p projectors): the full
+   hero must fit without scrolling — title, mark, blurb, button and hint.
+   Scoped under .screen--start so these always beat the later base rules. */
+@media (max-height: 800px) {
+  .screen--start .start__inner {
+    gap: 0.45rem;
+    padding: 1rem var(--s-4);
+  }
+  .screen--start .start__kicker {
+    font-size: 0.72rem;
+  }
+  .screen--start .start__title-line {
+    font-size: clamp(2rem, 9vh, 3.4rem);
+  }
+  .screen--start .start__wheel-mark {
+    width: clamp(110px, 17vh, 170px);
+    margin: 0;
+  }
+  .screen--start .start__blurb {
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+  .screen--start .btn-start {
+    margin-top: 0.2rem;
+    padding: 0.65rem 2rem;
+  }
+  .screen--start .btn-start__label {
+    font-size: 1.05rem;
+  }
+  .screen--start .btn-start__sub {
+    display: none;
+  }
+  .screen--start .start__hint {
+    font-size: 0.72rem;
+  }
 }
 /* A soft dark pad behind the copy. The screen field is now warm and open at
    the edges, which is right for the frame and wrong for the words — this is

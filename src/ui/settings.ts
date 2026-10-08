@@ -273,14 +273,12 @@ export class SettingsPanel {
   #wire(): void {
     const root = this.#root
 
-    root.querySelector('[data-act="close"]')?.addEventListener('click', () => {
-      this.close()
-      this.#hooks.onClose()
-    })
-    // Scrim click (the scrim itself carries data-act=close; the card stops propagation).
-    root.querySelector('.settings__scrim')?.addEventListener('click', () => {
-      this.close()
-      this.#hooks.onClose()
+    // Every closer: the scrim AND the × button both carry data-act=close.
+    root.querySelectorAll('[data-act="close"]').forEach((b) => {
+      b.addEventListener('click', () => {
+        this.close()
+        this.#hooks.onClose()
+      })
     })
 
     root.querySelectorAll('[data-tab]').forEach((b) => {
@@ -409,6 +407,17 @@ export class SettingsPanel {
       bar.classList.toggle('is-bad', sum !== 100)
     }
     if (txt) txt.textContent = `${sum}% / 100%`
+    // Keep every row's ≈% label live as sliders move — stale odds are lies.
+    const list = this.#tab === 'main' ? this.#draft : this.#mysteryDraft
+    const suffix = this.#tab === 'main' ? 'of spins' : 'of mystery opens'
+    this.#root.querySelectorAll('.seg').forEach((card, i) => {
+      const prize = list[i]
+      const pct = card.querySelector('.seg__pct')
+      if (prize && pct) {
+        const share = sum > 0 ? ((Number(prize.weight) || 0) / sum) * 100 : 0
+        pct.textContent = `≈ ${share.toFixed(1)}% ${suffix}`
+      }
+    })
     // Re-validate save button state live.
     const issues = validatePrizeList(this.#draft, this.#mysteryDraft)
     const save = this.#root.querySelector<HTMLButtonElement>('[data-act="save"]')
